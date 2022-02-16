@@ -44,17 +44,5 @@ load('2_UMin_1_LFP.mat','LFPTTRaw')
 % contiguous epoch states occur. 
 
 
-%% Compute relative power scaled by total power for each subject and average across stage
-% Replicate heterogenous groups by Karin
-
-
-%% Compute cosine similarity by patient and sleep stage
-
-% Compare
-Cs1 = getCosineSimilarity(x,y);
-Cs2 = (pdist(x,y,'cosine')) + 1;
-
-
-
 
 
