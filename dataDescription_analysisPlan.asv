@@ -135,68 +135,53 @@ for i = 1:height(LFPTTRaw)
     % Alt method: 
     % compute the average power and standard deviation per frequency band (5)
 
-    %for j = 1:5
-    
-
     %frequency_limits = [[0 3], [4 7], [8 12], [13 30], [31 50]]
 
     frequency_limits_low = [0, 4, 8, 13, 31];
     frequency_limits_high = [3, 7, 12, 30, 50];
 
-    band(5) = struct('power',[],'freq',[],'std_dev',[],'mean',[]);
+    band(1149,5) = struct('power',[],'freq',[],'std_dev',[],'mean',[]);
 
-    for j = 1:5 % transform below into 1 loop
+    for j = 1:5 % transformed below into 1 loop
 
-     [band(j).power, band(j).freq] = pspectrum(temp_hp, Fs, "FrequencyLimits", [frequency_limits_low(j) frequency_limits_high(j)])
-     power_decibel = 10*log10(band(j).power);
+     [band(i,j).power, band(i,j).freq] = pspectrum(temp_hp, Fs, "FrequencyLimits", [frequency_limits_low(j) frequency_limits_high(j)])
+     power_decibel = 10*log10(band(i,j).power);
      smooth_power = smoothdata(power_decibel,'movmean',30);
-     [band(j).std_dev, band(j).mean] = std(smooth_power);
+     [band(i,j).std_dev, band(i,j).mean] = std(smooth_power);
 
     end
 
     i
 
-%     [power_delta, freq_delta] = pspectrum(temp_hp, Fs, "FrequencyLimits", [0 3]); % delta band power spectrum
-%     power_delta_decibel = 10*log10(power_delta);
-%     smooth_power_delta = smoothdata(power_delta_decibel,'movmean',30);
-%     [S_delta, M_delta] = std(smooth_power_delta);
-% 
-%     [power_theta, freq_theta] = pspectrum(temp_hp, Fs, "FrequencyLimits", [4 7]); % theta band power spectrum
-%     power_theta_decibel = 10*log10(power_theta);
-%     smooth_power_theta = smoothdata(power_theta_decibel,'movmean',30);
-%     [S_theta, M_theta] = std(smooth_power_theta);
-% 
-%     [power_alpha, freq_alpha] = pspectrum(temp_hp, Fs, "FrequencyLimits", [8 12]); % alpha band power spectrum
-%     power_alpha_decibel = 10*log10(power_alpha);
-%     smooth_power_alpha = smoothdata(power_alpha_decibel,'movmean',30);
-%     [S_alpha, M_alpha] = std(smooth_power_alpha);
-% 
-%     [power_beta, freq_beta] = pspectrum(temp_hp, Fs, "FrequencyLimits", [13 30]); % beta band power spectrum
-%     power_beta_decibel = 10*log10(power_beta);
-%     smooth_power_beta = smoothdata(power_beta_decibel,'movmean',30);
-%     [S_beta, M_beta] = std(smooth_power_beta);
-% 
-%     [power_gamma, freq_gamma] = pspectrum(temp_hp, Fs, "FrequencyLimits", [31 50]); % gamma band power spectrum
-%     power_gamma_decibel = 10*log10(power_gamma);
-%     smooth_power_gamma = smoothdata(power_gamma_decibel,'movmean',30);
-%     [S_gamma, M_gamma] = std(smooth_power_gamma);
+    % compute the average power and standard deviation per frequency band (5)
+    [power_delta, freq_delta] = pspectrum(temp_hp, Fs, "FrequencyLimits", [0 3]); % delta band power spectrum
+    power_delta_decibel = 10*log10(power_delta);
+    smooth_power_delta = smoothdata(power_delta_decibel,'movmean',30);
+    [S_delta, M_delta] = std(smooth_power_delta);
 
+    [power_theta, freq_theta] = pspectrum(temp_hp, Fs, "FrequencyLimits", [4 7]); % theta band power spectrum
+    power_theta_decibel = 10*log10(power_theta);
+    smooth_power_theta = smoothdata(power_theta_decibel,'movmean',30);
+    [S_theta, M_theta] = std(smooth_power_theta);
 
-%     % compute the standard deviation per frequency band (5)
-%     %[S,M] = std(___)
-%     std_delta = std(); % delta: 0-3 Hz
-%     std_theta = std(); % theta: 4-7 Hz
-%     std_alpha = std(); % alpha: 8-12 Hz
-%     std_beta = std(); % low beta: 13-20 Hz; high beta: 21-30 Hz
-%     std_gamma = std(); % gamma: 31-50 Hz (cut gamma off at 50)
-    
-    % loop through freq bin designations
-    % find where freq > 0 but < 4 
-    % mean pwr per band
-    % meach stdev
+    [power_alpha, freq_alpha] = pspectrum(temp_hp, Fs, "FrequencyLimits", [8 12]); % alpha band power spectrum
+    power_alpha_decibel = 10*log10(power_alpha);
+    smooth_power_alpha = smoothdata(power_alpha_decibel,'movmean',30);
+    [S_alpha, M_alpha] = std(smooth_power_alpha);
+
+    [power_beta, freq_beta] = pspectrum(temp_hp, Fs, "FrequencyLimits", [13 30]); % beta band power spectrum
+    power_beta_decibel = 10*log10(power_beta);
+    smooth_power_beta = smoothdata(power_beta_decibel,'movmean',30);
+    [S_beta, M_beta] = std(smooth_power_beta);
+
+    [power_gamma, freq_gamma] = pspectrum(temp_hp, Fs, "FrequencyLimits", [31 50]); % gamma band power spectrum
+    power_gamma_decibel = 10*log10(power_gamma);
+    smooth_power_gamma = smoothdata(power_gamma_decibel,'movmean',30);
+    [S_gamma, M_gamma] = std(smooth_power_gamma);
         
 end
 
+% plot thepower and standard deviation per frequency band (5)
 figure
 plot(freq,smooth_power)
 title('smoothed power')
@@ -239,6 +224,12 @@ title('\gamma power')
 % use norm when indexing 
 % find freq. indcices for each band (5 bands)
 % gamma cut off for at 50
+    
+% loop through freq bin designations
+% find where freq > 0 but < 4 
+% mean pwr per band
+% meach stdev
+
 
 %% Compute cosine similarity by patient and sleep stage
 
