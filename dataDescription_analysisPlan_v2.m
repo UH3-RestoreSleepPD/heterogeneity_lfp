@@ -56,13 +56,10 @@ addpath(genpath('C:\MATLAB\GitHub\UH3-RestoreSleepPD\heterogeneity_lfp'))  %ctrl
 load('2_UMin_1_LFPraw.mat', 'LFPTTRaw') % LFPTTRaw is an element in 2_UMin_1_LFPraw.mat'
 
 %% Replicate sleep state duration quantification
-% I.e., calculate the average epoch number and duration (in seconds) that
-% contiguous epoch states occur.
+% I.e., calculate the average epoch number and duration (in seconds) that contiguous epoch states occur.
 
-sleep_states = LFPTTRaw.FSScore; %1149x1 cell
 % W, N1, N2, N3, R
-
-% visualize sleep state distribution --> histogram
+sleep_states = LFPTTRaw.FSScore; %1149x1 cell
 
 %% call the local "sleep_score_count" function for each sleep state
 
@@ -82,9 +79,6 @@ time = LFPTTRaw.Time;
 %% quant. when sleep-onset occurs --> 2-3 min of contig. sleep state
 
 sleep_onset = sleep_outputs.start_index_blocks(find(sleep_outputs.block_dur > 150, 1, 'first'));
-
-% quantify each state duration; epoch = 30s
-% calculate the average epoch number and duration (in seconds) that contiguous epoch states occur
 
 %% Compute relative power scaled by total power for each subject and average across stage
 % Replicate heterogenous groups by Karin
@@ -118,9 +112,6 @@ for i = 1:height(LFPTTRaw)
     [power, freq] = pspectrum(temp_hp,Fs,"FrequencyLimits",[0 80]);        % 0-80 or 0-100? Either's fine (anything beyond 50 is ok)
     % convert pwr to decibels -->  10*log(10)
     power_decibel = 10*log10(power);                                       % power_decibel outputs all negative values ... expected? Fine
-    %     % plot
-    %     figure
-    %     plot(freq, power_decibel)
 
     % fill cell array with power value per epoch
     all_power{i} = power_decibel;
@@ -141,10 +132,6 @@ power_norm = normalize(power_vec,"range"); % range default: 0-1
 % repack full normalized night of recording data
 power_norm_matrix = reshape(power_norm,size(power_matrix)); % vec --> matrix
 
-% compute mean and stdev of power before and after normalizing
-[S_p_raw, M_p_raw] = std(power_vec);
-[S_p_norm, M_p_norm] = std(power_norm);
-
 % Visual Sanity Check
 % plot comparision - one plot of all epochs before/after normalizing (use subplots)
 figure
@@ -158,10 +145,59 @@ plot(freq, power_norm_matrix)
 xlabel('frequency')
 ylabel('normalized power')
 title('power spectrum of all epochs after normalizing')
-
 % test on contact 1 and 2 to see whether alpha/beta bump is present
 
+% storage arrays for power mean and std. (devided by freq band)
+mean_storage = zeros(width(power_norm_matrix),6);
+std_storage = zeros(size(mean_storage));
 
+for i = 1:width(power_norm_matrix) % width --> columns                      % band boundaries? use conditionals
+    % create (indexed power value vector per freq band) to run std on       % conditionals create logical vectors (1s and 0s) using ~ boolean logic
+    delta_i = power_norm_matrix(freq >= 0 & freq <= 3, i);                  % delta: 0-3 Hz
+    theta_i = power_norm_matrix(freq > 3 & freq <= 7, i);                   % theta: 4-7 Hz
+    alpha_i = power_norm_matrix(freq > 7 & freq <= 12, i);                  % alpha: 8-12 Hz
+    l_beta_i = power_norm_matrix(freq > 12 & freq <= 20, i);                % low beta: 13-20 Hz
+    h_beta_i = power_norm_matrix(freq > 20 & freq <= 30, i);                % high beta: 21-30 Hz
+    gamma_i = power_norm_matrix(freq > 30 & freq <= 50, i);                 % gamma: 31-50 Hz
+
+    [S_delta, M_delta] = std(delta_i);                                      % how do I make this a loop / reduce lines of code?
+    [S_theta, M_theta] = std(theta_i);
+    [S_alpha, M_alpha] = std(alpha_i);
+    [S_l_beta, M_l_beta] = std(l_beta_i);
+    [S_h_beta, M_h_beta] = std(h_beta_i);
+    [S_gamma, M_gamma] = std(gamma_i);
+                                                                            % how do I make this a loop / reduce lines of code?
+    mean_storage(i,1) = M_delta;
+    std_storage(i,1) = S_delta;
+
+    mean_storage(i,2) = M_theta;
+    std_storage(i,2) = S_theta;
+
+    mean_storage(i,3) = M_alpha;
+    std_storage(i,3) = S_alpha;
+
+    mean_storage(i,4) = M_l_beta;
+    std_storage(i,4) = S_l_beta;
+
+    mean_storage(i,5) = M_h_beta;
+    std_storage(i,5) = S_h_beta;
+
+    mean_storage(i,6) = M_gamma;
+    std_storage(i,6) = S_gamma;
+
+    %     for j = 1:6
+    %         mean_storage(i,j) =
+    %
+    %     end
+
+    %     for k = 1:6
+    %         std_storage(i,k) =
+    %
+    %     end
+
+end
+
+% i loops through epochs (columns) -- > create row vec.
 
 
 %% notes with JAT
@@ -208,7 +244,7 @@ switch state
         score_state_matches = matches(scores, state); % set 1 for all scores labeled state (every row where scores = state), 0 otherwise
 end
 
-state_count = sum(score_state_matches);       % total up all the 1's in score_state_matches (all the rows where where scores = state)
+state_count = sum(score_state_matches);   % total up all the 1's in score_state_matches (all the rows where where scores = state)
 
 scores_length = length(scores);           % 1149 scored epochs
 epoch_count = 1;                          % initialize epoch counter
@@ -224,7 +260,7 @@ for i = 1:scores_length     % iterate over all rows in scores (logical)
             start_index_blocks(block_count) = i;
         end
         epoch_count = epoch_count + 1;
-        % state_epoch_vector(block_count, 1) = epoch_count;     % store the current epoch count
+        % state_epoch_vector(block_count, 1) = epoch_count;       % store the current epoch count
 
     else          % otherwise, store the epoch count and start fresh
         if epoch_count == 1  % fix issue with block count incrementing with continuous non-state matches
@@ -233,7 +269,7 @@ for i = 1:scores_length     % iterate over all rows in scores (logical)
             state_epoch_vector(block_count, 1) = epoch_count;     % store the current epoch count
             block_count = block_count + 1;                        % increment to the next block
         end
-        epoch_count = 1;                                      % start a new epoch count
+        epoch_count = 1;                                          % start a new epoch count
     end
 end
 
