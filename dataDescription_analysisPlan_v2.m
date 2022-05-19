@@ -50,9 +50,6 @@ addpath(genpath('C:\MATLAB\GitHub\UH3-RestoreSleepPD\heterogeneity_lfp'))  %ctrl
 
 %% Work with the LFPraw.mat file
 
-% load('2_UMin_1_LFP.mat', 'LFPTTRaw') % LFPTTRaw is an element in 2_UMin_1_LFP.mat'
-%'-v7.3'
-
 load('2_UMin_1_LFPraw.mat', 'LFPTTRaw') % LFPTTRaw is an element in 2_UMin_1_LFPraw.mat'
 
 %% Replicate sleep state duration quantification
@@ -76,7 +73,7 @@ test_count = W_outputs.state_count + N1_outputs.state_count + N2_outputs.state_c
 % isolate the time column of the LFPTTRaw timetable (a 1149x1 duration)
 time = LFPTTRaw.Time;
 
-%% quant. when sleep-onset occurs --> 2-3 min of contig. sleep state
+%% quantify when sleep-onset occurs (after 2-3 min of contig. sleep state)
 
 sleep_onset = sleep_outputs.start_index_blocks(find(sleep_outputs.block_dur > 150, 1, 'first'));
 
@@ -92,8 +89,6 @@ sleep_onset = sleep_outputs.start_index_blocks(find(sleep_outputs.block_dur > 15
 % beta: 13-30 Hz (low beta: 13-20 Hz; high beta: 21-30 Hz)
 % gamma: 31-50 Hz (cut gamma off at 50)
 
-%% test
-
 % length(temp_epoch)/30
 Fs = 1024; % sampling Frequency (in Hz) of the data
 Fl = 60; % line frequency, typically 50 or 60 Hz, the center of interpolation
@@ -101,7 +96,6 @@ neighborsToSample = 4; % Hz, tells function how large of a window (in Hz) to use
 neighborsToReplace = 2; % Hz, tells function which neighbors need to be replaced with the constant
 
 all_power = cell(height(LFPTTRaw),1);
-x = []; % base data element = epoch
 for i = 1:height(LFPTTRaw)
     temp_epoch = LFPTTRaw.("0"){i};
     % spectral interpolation function, notch filter - 60Hz noise (US), 50 (EU)
@@ -118,7 +112,6 @@ for i = 1:height(LFPTTRaw)
 
     disp(['Epoch #', num2str(i)])
 end
-test=1;
 
 % unpack all power values for full electrode
 power_matrix = [all_power{:}]; % matix: 4096 power values x 1149 epochs
@@ -145,7 +138,6 @@ plot(freq, power_norm_matrix)
 xlabel('frequency')
 ylabel('normalized power')
 title('power spectrum of all epochs after normalizing')
-% test on contact 1 and 2 to see whether alpha/beta bump is present
 
 % storage arrays for power mean and std. (devided by freq band)
 mean_storage = zeros(width(power_norm_matrix),6);
@@ -160,40 +152,63 @@ for i = 1:width(power_norm_matrix) % width --> columns                      % ba
     h_beta_i = power_norm_matrix(freq > 20 & freq <= 30, i);                % high beta: 21-30 Hz
     gamma_i = power_norm_matrix(freq > 30 & freq <= 50, i);                 % gamma: 31-50 Hz
 
-    [S_delta, M_delta] = std(delta_i);                                      % how do I make this a loop / reduce lines of code?
+    [S_delta, M_delta] = std(delta_i);
     [S_theta, M_theta] = std(theta_i);
     [S_alpha, M_alpha] = std(alpha_i);
     [S_l_beta, M_l_beta] = std(l_beta_i);
     [S_h_beta, M_h_beta] = std(h_beta_i);
     [S_gamma, M_gamma] = std(gamma_i);
-                                                                            % how do I make this a loop / reduce lines of code?
-    mean_storage(i,1) = M_delta;
-    std_storage(i,1) = S_delta;
 
-    mean_storage(i,2) = M_theta;
-    std_storage(i,2) = S_theta;
+    for j = 1:6
+        for k = 1:6
+            if j == 1
+                mean_storage(1,j) = M_delta;
+                if k == 1
+                    std_storage(i,k) = S_delta;
+                elseif j == 2
+                    mean_storage(1,j) = M_theta;
+                elseif k ==2
+                    std_storage(i,k) = S_theta;
+                elseif j == 3
+                    mean_storage(i,j) = M_alpha;
+                elseif k == 3
+                    std_storage(i,k) = S_alpha;
+                elseif j == 4
+                    mean_storage(i,j) = M_l_beta;
+                elseif k == 4
+                    std_storage(i,k) = S_l_beta;
+                elseif j == 5
+                    mean_storage(i,j) = M_h_beta;
+                elseif k == 5
+                    std_storage(i,k) = S_h_beta;
+                elseif j == 6
+                    mean_storage(i,j) = M_gamma;
+                elseif k == 6
+                    std_storage(i,k) = S_gamma;
+                end
+            end
+        end
+    end
 
-    mean_storage(i,3) = M_alpha;
-    std_storage(i,3) = S_alpha;
 
-    mean_storage(i,4) = M_l_beta;
-    std_storage(i,4) = S_l_beta;
-
-    mean_storage(i,5) = M_h_beta;
-    std_storage(i,5) = S_h_beta;
-
-    mean_storage(i,6) = M_gamma;
-    std_storage(i,6) = S_gamma;
-
-    %     for j = 1:6
-    %         mean_storage(i,j) =
-    %
-    %     end
-
-    %     for k = 1:6
-    %         std_storage(i,k) =
-    %
-    %     end
+%         % how do I make this a loop / reduce lines of code?
+%         mean_storage(i,1) = M_delta;
+%         std_storage(i,1) = S_delta;
+% 
+%         mean_storage(i,2) = M_theta;
+%         std_storage(i,2) = S_theta;
+% 
+%         mean_storage(i,3) = M_alpha;
+%         std_storage(i,3) = S_alpha;
+% 
+%         mean_storage(i,4) = M_l_beta;
+%         std_storage(i,4) = S_l_beta;
+% 
+%         mean_storage(i,5) = M_h_beta;
+%         std_storage(i,5) = S_h_beta;
+% 
+%         mean_storage(i,6) = M_gamma;
+%         std_storage(i,6) = S_gamma;
 
 end
 
@@ -202,17 +217,8 @@ end
 
 %% notes with JAT
 
-% normalize the power
-% norm = normalize(decibel,'range'); % range scale from 0 - 1 --> look at normalize documentation
-
-% use norm when indexing
-% find freq. indcices for each band (5 bands)
-% gamma cut off for at 50
-
-% loop through freq bin designations
-% find where freq > 0 but < 4
-% mean pwr per band
-% meach stdev
+% turn above sections (5) into a function to run each DBS contact (4) 
+% per patient (9) through
 
 
 %% Compute cosine similarity by patient and sleep stage
