@@ -95,7 +95,15 @@ Fl = 60; % line frequency, typically 50 or 60 Hz, the center of interpolation
 neighborsToSample = 4; % Hz, tells function how large of a window (in Hz) to use when picking the constant
 neighborsToReplace = 2; % Hz, tells function which neighbors need to be replaced with the constant
 
-all_power = cell(height(LFPTTRaw),1);
+all_power = cell(height(LFPTTRaw),1); 
+
+% create outer loop for all contacts (0,1,2,3)
+    % for c = LFPTTRaw(:,1:4)
+    % temp_epoch_0 = LFPTTRaw.("0"){i};
+    % temp_epoch_1 = LFPTTRaw.("1"){i};
+    % temp_epoch_2 = LFPTTRaw.("2"){i};
+    % temp_epoch_3 = LFPTTRaw.("3"){i};
+    
 for i = 1:height(LFPTTRaw)
     temp_epoch = LFPTTRaw.("0"){i};
     % spectral interpolation function, notch filter - 60Hz noise (US), 50 (EU)
@@ -211,8 +219,6 @@ for i = 1:width(power_norm_matrix) % width --> columns                      % ba
 %         std_storage(i,6) = S_gamma;
 
 end
-
-% i loops through epochs (columns) -- > create row vec.
 
 
 %% notes with JAT

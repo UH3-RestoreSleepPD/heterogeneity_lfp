@@ -80,8 +80,7 @@
 % repack full normalized night of recording data
 
 % compute power mean and std. per frequency band (devided by freq band)
-    % use conditionals
-    % conditionals create logical vectors (1s and 0s) using ~ boolean logic
+    % use conditionals: conditionals create logical vectors (1s and 0s) using ~ boolean logic
     
 
 %% Compute cosine similarity by patient and sleep stage
