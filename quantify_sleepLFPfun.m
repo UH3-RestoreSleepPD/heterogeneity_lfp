@@ -1,4 +1,4 @@
-function [mean_storage, std_storage] = quantify_sleepLFPfun(patient)
+function [mean_storage, std_storage, sleep_states] = quantify_sleepLFPfun(patient)
 
 % Inputs (1):
 % input 1 (patient): filename of patient's raw LFP data
@@ -19,7 +19,6 @@ function [mean_storage, std_storage] = quantify_sleepLFPfun(patient)
 
 
 %% PD Sleep LFP | Patient Heterogeneity Analysis
-
 
 addpath(genpath('C:\MATLAB\GitHub\UH3-RestoreSleepPD\heterogeneity_lfp'))  %ctrl A ctrl i (smart indenting)
 
@@ -133,11 +132,10 @@ for i = 1:3
 
 end
 
-% Compute bipolar reference
+% Compute bipolar references (4 col --> 3 col)
 % 0-1 --> 0 - mean(0 - 1)
 % 1-2 --> 1 - mean(1 - 2)
 % 2-3 --> 2 - mean(2 - 3)
-% 4 col --> 3 col
 
 %% create outer loop for all contacts (0,1,2,3)
 
@@ -146,10 +144,6 @@ Fs = 1024; % sampling Frequency (in Hz) of the data
 Fl = 60; % line frequency, typically 50 or 60 Hz, the center of interpolation
 neighborsToSample = 4; % Hz, tells function how large of a window (in Hz) to use when picking the constant
 neighborsToReplace = 2; % Hz, tells function which neighbors need to be replaced with the constant
-
-% bp_01 = bipolar_storage(:,1);
-% bp_12 = bipolar_storage(:,2);
-% bp_23 = bipolar_storage(:,3);
 
 all_power_bp = cell(epoch_number,3);
 
@@ -173,17 +167,9 @@ for bpi = 1:3                                                                 % 
     end
 end
 
-% % unpack all power values for full electrode
-% power_matrix = [all_power_bp{:}]; % matix: 4096 power values x 1149 epochs
-% 
-% % reformat matrix --> column vector of all power values
-% power_vec = reshape(power_matrix, numel(power_matrix),1); % numel --> outputs # of elements
-% 
-% % normalize across entire night of recording (all epochs)
-% power_norm = normalize(power_vec,"range"); % range default: 0-1
-% 
-% % repack full normalized night of recording data
-% power_norm_matrix = reshape(power_norm,size(power_matrix)); % vec --> matrix
+% bp_01 = bipolar_storage(:,1);
+% bp_12 = bipolar_storage(:,2);
+% bp_23 = bipolar_storage(:,3);
 
 %% make outputs 3 (mean) and 4 (std) matrices: epoch (# rows) by band (6 col) by bipolar ref (3)
 
@@ -248,10 +234,6 @@ for bpi = 1:3
         [std_storage(i,6,bpi), mean_storage(i,6,bpi)] = std(gamma_i);
     end
 end
-
-%% notes with JAT
-
-% turn above sections (5) into a function to run each DBS contact per patient (9) through
 
 end
 
@@ -336,6 +318,4 @@ if plot_flag
 end
 
 end
-
-%end
 
