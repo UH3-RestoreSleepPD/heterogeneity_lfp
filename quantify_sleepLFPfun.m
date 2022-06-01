@@ -66,7 +66,7 @@ addpath(genpath('C:\MATLAB\GitHub\UH3-RestoreSleepPD\heterogeneity_lfp'))  %ctrl
 
 %% Work with the LFPraw.mat file
 
-% patient = '2_UMin_1_LFPraw.mat';
+%patient = '2_UMin_1_LFPraw.mat';
 load(patient, 'LFPTTRaw') % LFPTTRaw is an element in '2_UMin_1_LFPraw.mat'
 
 %% Replicate sleep state duration quantification

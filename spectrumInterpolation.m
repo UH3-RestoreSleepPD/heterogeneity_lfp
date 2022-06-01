@@ -12,7 +12,6 @@ function newDat = spectrumInterpolation(data, Fs, Fl, neighborsToSample, neighbo
 % which neighbors need to be replaced with the constant value that was
 % determined by neighborsToSample. Generally, neighborsToReplace <
 % neighborsToSample in order to get a better spectral estimate.
-
     assert(length(data) > 1 && width(data) == 1, "Please transpose your vector, and ensure that you are only passing in 1D data")
     spectrum = fft(data);
     mag = abs(spectrum); % We use the real spectrum to interpolate and remove the powerline noise.
@@ -39,17 +38,18 @@ function newDat = spectrumInterpolation(data, Fs, Fl, neighborsToSample, neighbo
     nearestPowerlineHarmonic = mod(nyquistFrequency, Fl); % This gives us the distance to the nyquist frequency starting from the middle.
     binStart = (length(mag)/2) + (nearestPowerlineHarmonic * binStepSize);
     
-    for i = binStart:nextPowerBin:(length(mag) - nextPowerBin)
+    % Now replace the other side
+
+    for i=binStart:nextPowerBin:(length(mag) - nextPowerBin)
         neighborSamples = mag(i-neighborsToSample:i+neighborsToSample, :);
         neighborhoodAverage = median(neighborSamples);
         for j = 1:width(data)
             mag(i-neighborsToReplace:i+neighborsToReplace, j) = neighborhoodAverage(j);
         end
-    end​
+    end
 
+    
     % Create a new signal based on euler's formula.    
     newDat = mag.*exp(1i.*phase);
     newDat = real(ifft(newDat));
-end
-
 end

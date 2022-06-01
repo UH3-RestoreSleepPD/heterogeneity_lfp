@@ -6,7 +6,7 @@ patient_files = {'1_UMin_1_LFPraw.mat','2_UMin_1_LFPraw.mat',...
    '9_UMin_1_LFPraw.mat','10_UMin_1_LFPraw.mat'};
 
 % create main directory and folder/directory for LFP summary outputs
-maindir = 'C:\MATLAB\GitHub\UH3-RestoreSleepPD\heterogeneity_lfp\RawPSG_Tableformat'; % DAS
+maindir = 'C:\MATLAB\GitHub\UH3-RestoreSleepPD\RawPSG_Tableformat'; % DAS
 savedir = 'C:\MATLAB\GitHub\UH3-RestoreSleepPD\heterogeneity_lfp\summaryLFP';
 
 cd(maindir)  % cd = change directory
