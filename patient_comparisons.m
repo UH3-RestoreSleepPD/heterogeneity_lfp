@@ -7,19 +7,30 @@ LFP_struct = dir('*.mat'); % creates struct of summaryLFP metadata
 summaryLFP_files = {LFP_struct.name}; % pulls out only the file names of the summaryLFP data
 
 % separate bipolar references (create 3 big matices)
-% LFP_idx = [];
+% bipol_power = []; all patients' mean power per LFP epoch (# rows) per frequency band (6 columns) per bipolar offset (3)
 % for bp = 1:3
 % create one matrix of all patients' mean LFP power per epoch per band
-bipol_idx = []; 
+bipol_idx = []; % 8609 X 6
 for i = 1:length(summaryLFP_files)
     load(summaryLFP_files{i},"m")
-    bipol_idx = [bipol_idx; m(:,:,1)];
+    bipol_idx = [bipol_idx; m(:,:,1)]; 
 end
 
-% rows (observations) = # patients (10) * # epochs per patient
-% cols (features) =  # bands (6)
+% % separate bipolar references (create 3 big matrices)
+% bipol_power = [];
+% for bp = 1:3
+%     % create one matrix of all patients' mean LFP power per epoch (# rows) per band (6 col) per bipolar offset (3)
+%     bipol_idx = []; % 8609 X 6 
+%     for i = 1:length(summaryLFP_files)
+%         load(summaryLFP_files{i},"m")
+%         bipol_idx = [bipol_idx; m(:,:,bp)];
+%     end
+%     bipol_power = [m(:,:,1), m(:,:,2), m(:,:,3)]
+% end
 
-% bp1 = 8609 X 6 
+% rows (observations) = # patients (10) * # epochs per patient
+% cols_h (features) =  # bands (6)
+% cols_d (contact combinations) = bipolar offsets (3)
 
 %% Determine cluster assignments
 %% UMAP (MatLab File Exchange)
@@ -60,7 +71,7 @@ title('PCA')
 %% t-SNE (t-distributed stochastic neighbor embedding, non-linear dimensionality reduction)
 rng(1)
 Y = tsne(bipol_idx);
-figure, gscatter(score(:,1),score(:,2),idx)
+figure, gscatter(Y(:,1),Y(:,2),idx)
 legend('Cluster 1','Cluster 2', 'location', 'northwest');
 xlabel('Dim1')
 ylabel('Dim2')

@@ -4,19 +4,9 @@ function [mean_storage, std_storage, sleep_states] = quantify_sleepLFPfun(patien
 % input 1 (patient): filename of patient's raw LFP data
 
 % Outputs (#):
-% output 1 (sleep_states): average epoch number and duration (in seconds) that contiguous epoch states occur.
-% output 2 (sleep_onset): time (in seconds) when sleep-onset occurs (after 2-3 min of a continuous sleep state)
-
-% make outputs 3 and 4 matrices: row (epoch) by col (contact) by matrix (bipolar offset)
-% output 3 (mean_storage): mean power per frequency band (6 columns) per LFP epoch (# rows) per bipolar offset (3)
-% output 4 (std_storage): mean standard dev. per freqency band (6) per LFP epoch (# rows) per bipolar offset (3)
-
-% Put this at end of function
-% sleepLFP_outputs.sleep_states = sleep_states;
-% sleepLFP_outputs.sleep_onset = sleep_onset;
-% sleepLFP_outputs.mean_storage = mean_storage;
-% sleepLFP_outputs.std_storage = std_storage;
-
+% output 1 (mean_storage): mean power per frequency band (6 columns) per LFP epoch (# rows) per bipolar offset (3)
+% output 2 (std_storage): mean standard dev. per freqency band (6) per LFP epoch (# rows) per bipolar offset (3)
+% output 3 (sleep_states): average epoch number and duration (in seconds) that contiguous epoch states occur.
 
 %% PD Sleep LFP | Patient Heterogeneity Analysis
 
@@ -173,7 +163,7 @@ end
 
 %% make outputs 3 (mean) and 4 (std) matrices: epoch (# rows) by band (6 col) by bipolar ref (3)
 
-% initialize storare container
+% initialize storage container
 power_norm_matrix = all_power_bp;
 for bpi = 1:3 
     %for i = 1:epoch_number
