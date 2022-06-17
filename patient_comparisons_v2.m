@@ -39,6 +39,8 @@ bipol_power = [bipol_01, bipol_12, bipol_23];
 %% Determine cluster assignments
 % UMAP (MatLab File Exchange)
 
+addpath 'C:\MATLAB\GitHub\UH3-RestoreSleepPD\heterogeneity_lfp\umap'
+
 % for bpi = 1:3
 %     [reduction, umap, clusterIdentifiers, extras] = run_umap(bipol_power(bpi));
 % end
@@ -72,13 +74,13 @@ subplot(1,3,3), funcPlot(bipol_23,C3,idx3)
 figure 
 subplot(1,3,1)
 [silh1,h1] = silhouette(bipol_01,idx1,"sqEuclidean");
-title('silhouette plot, bipol 01')
+title('silhouette plot, bipol 0-1')
 subplot(1,3,2)
 [silh2,h2] = silhouette(bipol_12,idx2,"sqEuclidean");
-title('silhouette plot, bipol 12')
+title('silhouette plot, bipol 1-2')
 subplot(1,3,3)
 [silh3,h3] = silhouette(bipol_23,idx3,"sqEuclidean");
-title('silhouette plot, bipol 23')
+title('silhouette plot, bipol 2-3')
 
 %% PCA (linear dimensionality reduction, assessment of variance)
 % normalize data
@@ -90,7 +92,7 @@ format = { {}; {'Marker', '^', 'MarkerSize', 6}; {}};
 legend('Cluster 1','Cluster 2', 'location', 'northwest');
 xlabel('PC1')
 ylabel('PC2')
-title('PCA, bipol 01')
+title('PCA, bipol 0-1')
 
 [coeff2, score2, latent2] = pca(bipol_12);
 subplot(1,3,2), gscatter(score2(:,1),score2(:,2),idx2)
@@ -98,7 +100,7 @@ format = { {}; {'Marker', '^', 'MarkerSize', 6}; {}};
 legend('Cluster 1','Cluster 2', 'location', 'northwest');
 xlabel('PC1')
 ylabel('PC2')
-title('PCA, bipol 12')
+title('PCA, bipol 1-2')
 
 [coeff3, score3, latent3] = pca(bipol_23);
 subplot(1,3,3), gscatter(score3(:,1),score3(:,2),idx3)
@@ -106,7 +108,7 @@ format = { {}; {'Marker', '^', 'MarkerSize', 6}; {}};
 legend('Cluster 1','Cluster 2', 'location', 'northwest');
 xlabel('PC1')
 ylabel('PC2')
-title('PCA, bipol 23')
+title('PCA, bipol 2-3')
 
 % % % Biplot of PCA color coded by group idx
 % % biplotG(coeff(:,1:2), score(:,1:2), 'Varlabels', Targets, 'Groups', idx)
@@ -127,17 +129,17 @@ subplot(1,3,1), gscatter(Y1(:,1),Y1(:,2),idx1)
 legend('Cluster 1','Cluster 2', 'location', 'northwest');
 xlabel('Dim1')
 ylabel('Dim2')
-title('t-SNE, bipol 01')
+title('t-SNE, bipol 0-1')
 subplot(1,3,2), gscatter(Y2(:,1),Y2(:,2),idx2)
 legend('Cluster 1','Cluster 2', 'location', 'northwest');
 xlabel('Dim1')
 ylabel('Dim2')
-title('t-SNE, bipol 12')
+title('t-SNE, bipol 1-2')
 subplot(1,3,3), gscatter(Y3(:,1),Y3(:,2),idx3)
 legend('Cluster 1','Cluster 2', 'location', 'northwest');
 xlabel('Dim1')
 ylabel('Dim2')
-title('t-SNE, bipol 23')
+title('t-SNE, bipol 2-3')
  
 %% Compute cosine similarity by patient, band, and sleep stage
 
