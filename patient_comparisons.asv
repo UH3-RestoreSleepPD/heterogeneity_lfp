@@ -28,28 +28,9 @@ end
 %     bipol_power = [m(:,:,1), m(:,:,2), m(:,:,3)]
 % end
 
-% separate bipolar references (create 3 big matrices)
-% for bp = 1:3
-bipol_01 = []; % 8609 X 6
-for i = 1:length(summaryLFP_files)
-    load(summaryLFP_files{i},"m")
-    bipol_01 = [bipol_01; m(:,:,1)];
-end
-bipol_12 = []; % 8609 X 6
-for i = 1:length(summaryLFP_files)
-    load(summaryLFP_files{i},"m")
-    bipol_12 = [bipol_12; m(:,:,2)];
-end
-bipol_23 = []; % 8609 X 6
-for i = 1:length(summaryLFP_files)
-    load(summaryLFP_files{i},"m")
-    bipol_23 = [bipol_23; m(:,:,3)];
-end
-% create one matrix of all patients' mean LFP power per epoch (# rows) per band (6 col) per bipolar offset (3)
-bipol_power = [bipol_01, bipol_12]
-
 % rows (observations) = # patients (10) * # epochs per patient
-% cols (features) =  # bands (6)
+% cols_h (features) =  # bands (6)
+% cols_d (contact combinations) = bipolar offsets (3)
 
 %% Determine cluster assignments
 %% UMAP (MatLab File Exchange)
@@ -90,7 +71,7 @@ title('PCA')
 %% t-SNE (t-distributed stochastic neighbor embedding, non-linear dimensionality reduction)
 rng(1)
 Y = tsne(bipol_idx);
-figure, gscatter(score(:,1),score(:,2),idx)
+figure, gscatter(Y(:,1),Y(:,2),idx)
 legend('Cluster 1','Cluster 2', 'location', 'northwest');
 xlabel('Dim1')
 ylabel('Dim2')

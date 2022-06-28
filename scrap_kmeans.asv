@@ -1,0 +1,41 @@
+% bipol_12 = []; % 8609 X 6
+% for i = 1:length(summaryLFP_files)
+%     load(summaryLFP_files{i},"m")
+%     bipol_12 = [bipol_12; m(:,:,2)];
+% end
+% 
+% bipol_23 = []; % 8609 X 6
+% for i = 1:length(summaryLFP_files)
+%     load(summaryLFP_files{i},"m")
+%     bipol_23 = [bipol_23; m(:,:,3)];
+% end
+% %end
+
+
+%% k-means clustering (2) 
+ 
+%for bp = 1:3 
+rng(1); 
+[idx1,C1] = kmeans(bipol_01,2); 
+[idx2,C2] = kmeans(bipol_12,2); 
+[idx3,C3] = kmeans(bipol_23,2); 
+%end 
+ 
+rng(1) 
+%for bp = 1:3 
+figure 
+subplot(1,3,1), funcPlot(bipol_01,C1,idx1) 
+subplot(1,3,2), funcPlot(bipol_12,C2,idx2) 
+subplot(1,3,3), funcPlot(bipol_23,C3,idx3) 
+%end 
+ 
+figure  
+subplot(1,3,1) 
+[silh1,h1] = silhouette(bipol_01,idx1,"sqEuclidean"); 
+title('silhouette plot, bipol 01') 
+subplot(1,3,2) 
+[silh2,h2] = silhouette(bipol_12,idx2,"sqEuclidean"); 
+title('silhouette plot, bipol 12') 
+subplot(1,3,3) 
+[silh3,h3] = silhouette(bipol_23,idx3,"sqEuclidean"); 
+title('silhouette plot, bipol 23') 
