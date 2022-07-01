@@ -15,18 +15,18 @@ subjectID = []; % 8609 x 1
 bipol_01 = []; % 8609 x 6
 bipol_12 = []; % 8609 x 6
 bipol_23 = []; % 8609 x 6
-bipol_01_sleep_mean = [];
-bipol_12_sleep_mean = [];
-bipol_23_sleep_mean = [];
+bipol_01_sleep_mean = []; % 10 row (pt) x 6 col (band)
+bipol_12_sleep_mean = []; % 10 row (pt) x 6 col (band)
+bipol_23_sleep_mean = []; % 10 row (pt) x 6 col (band)
 for i = 1:length(summaryLFP_files)
     load(summaryLFP_files{i},"m", "sl"); % m = 1075 x 6 x 3
     bipol_01 = [bipol_01; m(:,:,1)];
     bipol_12 = [bipol_12; m(:,:,2)];
     bipol_23 = [bipol_23; m(:,:,3)];
     % need rows of sl that are only sleep states: col-vector logical of sl
-    sl_logical = []'; % 1075 x 1
+    sl_logical = zeros(length(sl)); % 1075 x 1
     for j = 1:length(sl)
-        if sl{j} == 'N1', 'N2', 'N3', 'R';
+        if matches(sl{j},{'N1', 'N2', 'N3', 'R'}); % matches replaces strcmp
             sl_logical(j) = 1;
         elseif sl{j} == 'W';
             sl_logical(j) = 0;
@@ -36,9 +36,9 @@ for i = 1:length(summaryLFP_files)
     bipol_01_sleep_temp = mean(m(sl_logical,:,1)); 
     bipol_01_sleep_mean = [bipol_01_sleep_mean; bipol_01_sleep_temp]; 
     bipol_12_sleep_temp = mean(m(sl_logical,:,2)); 
-    bipol_12_sleep_mean = [bipol_12_sleep_mean; bipol_12_sleep_temp]; % 10 row (pt) * 6 col (band)
+    bipol_12_sleep_mean = [bipol_12_sleep_mean; bipol_12_sleep_temp]; 
     bipol_23_sleep_temp = mean(m(sl_logical,:,3)); 
-    bipol_23_sleep_mean = [bipol_23_sleep_mean; bipol_23_sleep_temp]; % 10 row (pt) * 6 col (band)
+    bipol_23_sleep_mean = [bipol_23_sleep_mean; bipol_23_sleep_temp]; 
     subjectID = [subjectID; repmat(i,length(m(:,:,1)),1)];
 end
 
@@ -165,11 +165,12 @@ title('t-SNE, bipol 2-3')
 
 %% find other layer from data (aside from pt ID) to map back onto clusters
 
-
-
-
-
-
+rng(1)
+%for bp = 1:3
+Y1_sl = tsne(bipol_01_sleep_mean);
+Y2_sl = tsne(bipol_12_sleep_mean);
+Y3_sl = tsne(bipol_23_sleep_mean);
+%end
 
 
 

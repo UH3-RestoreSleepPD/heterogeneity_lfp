@@ -24,14 +24,11 @@ for i = 1:length(summaryLFP_files)
     bipol_12 = [bipol_12; m(:,:,2)];
     bipol_23 = [bipol_23; m(:,:,3)];
     % need rows of sl that are only sleep states: col-vector logical of sl
-    sl_logical = []'; % 1075 x 1
+    sl_logical = zeros(length(sl),1,'logical'); % 1075 x 1
     for j = 1:length(sl)
-        if sl{j} == 'N1', 'N2', 'N3', 'R';
-            sl_logical(j) = 1;
-        elseif sl{j} == 'W';
-            sl_logical(j) = 0;
+        if matches(sl{j},{'N1', 'N2', 'N3', 'R'}); % matches replaces strcmp
+            sl_logical(j) = true; % elseif W, = 0
         end
-        sl_logical = logical(sl_logical);
     end
     bipol_01_sleep_temp = mean(m(sl_logical,:,1)); 
     bipol_01_sleep_mean = [bipol_01_sleep_mean; bipol_01_sleep_temp]; 
