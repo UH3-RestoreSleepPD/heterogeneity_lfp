@@ -32,6 +32,19 @@ end
 % cols_h (features) =  # bands (6)
 % cols_d (contact combinations) = bipolar offsets (3)
 
+%% rows of sl that are only sleep states: vector logical of sl
+
+sl_logical = []; % 1075 x 1
+for j = 1:length(sl)
+    % rows of sl that are only sleep states: vector logical of sl
+    if sl{j} == 'N1', 'N2', 'N3', 'R'
+        sl_logical(j) = 1;
+    elseif sl{j} == 'W'
+        sl_logical(j) = 0;
+    end
+end
+sl_logical = sl_logical';
+
 %% Determine cluster assignments
 %% UMAP (MatLab File Exchange)
 

@@ -19,15 +19,15 @@ bipol_01_sleep_mean = []; % 10 row (pt) x 6 col (band)
 bipol_12_sleep_mean = []; % 10 row (pt) x 6 col (band)
 bipol_23_sleep_mean = []; % 10 row (pt) x 6 col (band)
 for i = 1:length(summaryLFP_files)
-    load(summaryLFP_files{i},"m", "sl"); % m = 1075 x 6 x 3
+    load(summaryLFP_files{i},"m", "sl"); % m = 1075 x 6 x 3; s = 1075 x 1
     bipol_01 = [bipol_01; m(:,:,1)];
     bipol_12 = [bipol_12; m(:,:,2)];
     bipol_23 = [bipol_23; m(:,:,3)];
     % need rows of sl that are only sleep states: col-vector logical of sl
     sl_logical = zeros(length(sl),1,'logical'); % 1075 x 1
     for j = 1:length(sl)
-        if matches(sl{j},{'N1', 'N2', 'N3', 'R'}); % matches replaces strcmp
-            sl_logical(j) = true; % elseif W, = 0
+        if matches(sl{j},{'N1', 'N2', 'N3', 'R'}) % matches replaces strcmp
+            sl_logical(j) = true; % sl{j} = 1; else 'W', sl{j} = 0
         end
     end
     bipol_01_sleep_temp = mean(m(sl_logical,:,1)); 
@@ -44,36 +44,10 @@ bipol_power = [bipol_01, bipol_12, bipol_23];
 
 % rows (observations) = # patients (10) * # epochs per patient; cols_h (features) =  # bands (6); cols_d (contact combinations) = bipolar offsets (3)
 
-
-%% % rows of sl that are only sleep states: vector logical of sl
-
-sl_logical = []; % 1075 x 1
-for j = 1:length(sl)
-    % rows of sl that are only sleep states: vector logical of sl
-    if sl{j} == 'N1', 'N2', 'N3', 'R'
-        sl_logical(j) = 1;
-    elseif sl{j} == 'W'
-        sl_logical(j) = 0;
-    end
-end
-sl_logical = sl_logical';
-
-% % 
-% 1 * 6 * 3
-% for 
-%     
-% end
-
-% % ratio testing
-
 %% Determine cluster assignments
 % UMAP (MatLab File Exchange)
 
 addpath 'C:\MATLAB\GitHub\UH3-RestoreSleepPD\heterogeneity_lfp\umap'
-
-% for bpi = 1:3
-%     [reduction, umap, clusterIdentifiers, extras] = run_umap(bipol_power(bpi));
-% end
 
 [reduction, umap, clusterIdentifiers, extras] = run_umap(bipol_01);
 [reduction, umap, clusterIdentifiers, extras] = run_umap(bipol_12);
@@ -112,13 +86,9 @@ xlabel('PC1')
 ylabel('PC2')
 title('PCA, bipol 2-3')
 
-% % % Biplot of PCA color coded by group idx
-% % biplotG(coeff(:,1:2), score(:,1:2), 'Varlabels', Targets, 'Groups', idx)
-% % xlabel('PC1')
-% % ylabel('PC2')
-% % title('biplot')
 
 %% t-SNE (t-distributed stochastic neighbor embedding, non-linear dimensionality reduction)
+
 rng(1)
 %for bp = 1:3
 Y1 = tsne(bipol_01);
@@ -130,19 +100,22 @@ Y3 = tsne(bipol_23);
 figure
 for i = 1:10
     pt_index = subjectID == i; 
-    rand_color = rand(1,3); % 1 x 3                                         why these dims?
-    scatter(Y1(pt_index,1),Y1(pt_index,2), 30, rand_color,"filled")
+    rand_clr = rand(1,3); % 1 x 3                                           % why these dims? --> Color theory! (RGB permutations)
+    scatter(Y1(pt_index,1),Y1(pt_index,2), 30, rand_clr, "filled")          % want a legend / point labels based on pt_index
     hold on
 end
 xlabel('Dim1')
 ylabel('Dim2')
 title('t-SNE, bipol 0-1')
 
+% gscatter(x,y,group,clr,sym,size)
+% scatter(x,y,sz,c,'filled', mkr, options)
+
 figure
 for i = 1:10
     pt_index = subjectID == i; 
-    rand_color = rand(1,3); % 1 x 3                                        
-    scatter(Y2(pt_index,1),Y2(pt_index,2), 30, rand_color,"filled")
+    rand_clr = rand(1,3); % 1 x 3                                        
+    scatter(Y2(pt_index,1),Y2(pt_index,2), 30, rand_clr,"filled")
     hold on
 end
 xlabel('Dim1')
@@ -152,42 +125,58 @@ title('t-SNE, bipol 1-2')
 figure
 for i = 1:10
     pt_index = subjectID == i; 
-    rand_color = rand(1,3); % 1 x 3
-    scatter(Y3(pt_index,1),Y3(pt_index,2), 30, rand_color,"filled")
+    rand_clr = rand(1,3); % 1 x 3
+    scatter(Y3(pt_index,1),Y3(pt_index,2), 30, rand_clr,"filled")
     hold on
 end
 xlabel('Dim1')
 ylabel('Dim2')
 title('t-SNE, bipol 2-3')
 
-%% find other layer from data (aside from pt ID) to map back onto clusters
+%% t-SNE per bipolar offset based on normalized mean sleep-state band power (all bands) 
 
 rng(1)
-%for bp = 1:3
 Y1_sl = tsne(bipol_01_sleep_mean);
 Y2_sl = tsne(bipol_12_sleep_mean);
 Y3_sl = tsne(bipol_23_sleep_mean);
-%end
 
 
+figure
+for pt_i = 1:10
+    % pt_idx = subjectID == i; 
+    rand_clr = rand(1,3); % 1 x 3                                         
+    scatter(Y1_sl(pt_i,1),Y1_sl(pt_i,2), 30, rand_clr,"filled")
+    hold on
+end
+xlabel('Dim1')
+ylabel('Dim2')
+title('t-SNE, bipol 0-1')
 
-%% t-SNE per bipolar offset - *figure out diff group index
-% figure
-% subplot(1,3,1), gscatter(Y1(:,1),Y1(:,2),pt_index)
-% % legend('Cluster 1','Cluster 2', 'location', 'northwest');
-% xlabel('Dim1')
-% ylabel('Dim2')
-% title('t-SNE, bipol 0-1')
-% subplot(1,3,2), gscatter(Y2(:,1),Y2(:,2),pt_index)
-% % legend('Cluster 1','Cluster 2', 'location', 'northwest');
-% xlabel('Dim1')
-% ylabel('Dim2')
-% title('t-SNE, bipol 1-2')
-% subplot(1,3,3), gscatter(Y3(:,1),Y3(:,2),pt_index)
-% % legend('Cluster 1','Cluster 2', 'location', 'northwest');
-% xlabel('Dim1')
-% ylabel('Dim2')
-% title('t-SNE, bipol 2-3')
+figure
+for pt_i = 1:10
+    %pt_index = subjectID == i; 
+    rand_clr = rand(1,3); % 1 x 3                                        
+    scatter(Y2_sl(pt_i,1),Y2_sl(pt_i,2), 30, rand_clr,"filled")
+    hold on
+end
+xlabel('Dim1')
+ylabel('Dim2')
+title('t-SNE, bipol 1-2')
+
+figure
+for pt_i = 1:10
+    %pt_index = subjectID == i; 
+    rand_clr = rand(1,3); % 1 x 3
+    scatter(Y3_sl(pt_i,1),Y3_sl(pt_i,2), 30, rand_clr,"filled")
+    hold on
+end
+xlabel('Dim1')
+ylabel('Dim2')
+title('t-SNE, bipol 2-3')
+
+
+%% find other layers from data (aside from pt ID) to map back onto clusters
+
  
 %% Compute cosine similarity by patient, band, and sleep stage
 
