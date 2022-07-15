@@ -83,11 +83,13 @@ sleep_onset = sleep_outputs.start_index_blocks(find(sleep_outputs.block_dur > 15
 
 % sampling rate: 250 Hz
 
-% 5 bands:
+% 6 bands:
 % delta: 0-3 Hz
 % theta: 4-7 Hz
 % alpha: 8-12 Hz
-% beta: 13-30 Hz (low beta: 13-20 Hz; high beta: 21-30 Hz)
+% beta: 13-30 Hz
+%   low beta: 13-20 Hz
+%   high beta: 21-30 Hz
 % gamma: 31-50 Hz (cut gamma off at 50)
 
 % remove time and FFScore columns from LFPTTRaw

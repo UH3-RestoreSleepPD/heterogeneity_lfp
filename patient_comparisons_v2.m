@@ -140,17 +140,16 @@ Y1_sl = tsne(bipol_01_sleep_mean);
 Y2_sl = tsne(bipol_12_sleep_mean);
 Y3_sl = tsne(bipol_23_sleep_mean);
 
-
 figure
 for pt_i = 1:10
     % pt_idx = subjectID == i; 
     rand_clr = rand(1,3); % 1 x 3                                         
-    scatter(Y1_sl(pt_i,1),Y1_sl(pt_i,2), 30, rand_clr,"filled")
+    scatter(Y1_sl(pt_i,1),Y1_sl(pt_i,2), 30, rand_clr,"filled")             % want a legend / point labels based on pt_index
     hold on
 end
 xlabel('Dim1')
 ylabel('Dim2')
-title('t-SNE, bipol 0-1')
+title('t-SNE, bipol 0-1, mean power during sleep')
 
 figure
 for pt_i = 1:10
@@ -161,7 +160,7 @@ for pt_i = 1:10
 end
 xlabel('Dim1')
 ylabel('Dim2')
-title('t-SNE, bipol 1-2')
+title('t-SNE, bipol 1-2, mean power during sleep')
 
 figure
 for pt_i = 1:10
@@ -172,10 +171,59 @@ for pt_i = 1:10
 end
 xlabel('Dim1')
 ylabel('Dim2')
-title('t-SNE, bipol 2-3')
+title('t-SNE, bipol 2-3, mean power during sleep')
 
 
 %% find other layers from data (aside from pt ID) to map back onto clusters
+
+% 6 bands:
+% 1) delta: 0-3 Hz
+% 2) theta: 4-7 Hz
+% 3) alpha: 8-12 Hz
+% 4) low beta: 13-20 Hz
+% 5) high beta: 21-30 Hz
+% 6) gamma: 31-50 Hz
+
+%% t-SNE per bipolar offset based on normalized mean sleep-state band power (beta band) 
+
+% low beta (13-20 Hz) - col 4; high beta (21-30 Hz) - col 5
+rng(1)
+Y1_sl_b = tsne(bipol_01_sleep_mean(:,4:5));
+Y2_sl_b = tsne(bipol_12_sleep_mean(:,4:5));
+Y3_sl_b = tsne(bipol_23_sleep_mean(:,4:5));
+
+figure
+for pt_i = 1:10
+    % pt_idx = subjectID == i; 
+    rand_clr = rand(1,3); % 1 x 3                                         
+    scatter(Y1_sl_b(pt_i,1),Y1_sl_b(pt_i,2), 30, rand_clr,"filled")             % want a legend / point labels based on pt_index
+    hold on
+end
+xlabel('Dim1')
+ylabel('Dim2')
+title('t-SNE, bipol 0-1, mean beta power during sleep')
+
+figure
+for pt_i = 1:10
+    %pt_index = subjectID == i; 
+    rand_clr = rand(1,3); % 1 x 3                                        
+    scatter(Y2_sl_b(pt_i,1),Y2_sl_b(pt_i,2), 30, rand_clr,"filled")
+    hold on
+end
+xlabel('Dim1')
+ylabel('Dim2')
+title('t-SNE, bipol 1-2, mean beta power during sleep')
+
+figure
+for pt_i = 1:10
+    %pt_index = subjectID == i; 
+    rand_clr = rand(1,3); % 1 x 3
+    scatter(Y3_sl_b(pt_i,1),Y3_sl_b(pt_i,2), 30, rand_clr,"filled")
+    hold on
+end
+xlabel('Dim1')
+ylabel('Dim2')
+title('t-SNE, bipol 2-3, mean beta power during sleep')
 
  
 %% Compute cosine similarity by patient, band, and sleep stage
