@@ -281,7 +281,7 @@ function [outputs] = state_score_count(scores, state, plot_flag)
 
 % switch b/t state vs. contig. sleep state
 switch state
-    case 'sleep' % N1, N2, N3
+    case 'sleep' % N1, N2, N3 (NREM sates of sleep)
         score_state_matches = matches(scores, {'N1', 'N2', 'N3'});
 
     otherwise
