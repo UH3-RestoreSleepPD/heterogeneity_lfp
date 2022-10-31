@@ -10,7 +10,7 @@ summaryLFP_files = {LFP_struct.name}; % pulls out only the file names of the sum
 % extract subject ID
 subjectID = []; % 8609 x 1
 
-% separate bipolar references (create 3 big matrices)
+% separate bipolar contacts (create 3 big matrices)
 %for bp = 1:3
 bipol_01 = []; % 8609 x 6
 bipol_12 = []; % 8609 x 6
@@ -151,7 +151,10 @@ hold off
 figure 
 [silh1, h1] = silhouette(X1,idx1,"sqEuclidean");
 
-% Cluster 2 (bp01): 2,3,6,8,9,10
+% bp 01
+% clust1: all patients (Pt. 1-10)
+% clust2: Pt. 2,3,6,8,9,10
+
 
 % bipol 1-2
 rng(1);
@@ -173,6 +176,10 @@ hold off
 
 figure 
 [silh2, h2] = silhouette(X2,idx2,"sqEuclidean");
+
+% bp12
+% clust1: all patients (Pt. 1-10)
+% clust2: Pt. 2,3,4,5,6,8,9,10
 
 
 % bipol 2-3
@@ -196,13 +203,16 @@ hold off
 figure 
 [silh3, h3] = silhouette(X2,idx2,"sqEuclidean");
 
+% bp23
+% clust1: all patients (Pt. 1-10)
+% clust2: Pt. 2,3,4,5,6,7,8,9,10
 
 
 % "Average Relative Power for awake states averaged throughout the night 
 % average across the found groups [0,4,8] (gr 1), [2,3,6,7] (gr 2) 
 % and [1,5] (grnother)."
 
-%% K means (2 clusters) - per bipolar offset based on normalized mean sleep-state band power (all bands) 
+%% K means (2 clusters) - per bipolar contact based on normalized mean sleep-state band power (all bands) 
 % run on score#
 % cluster IDs 
 % quant fraction of unique pt. epochs (overlap & spread)
@@ -211,8 +221,6 @@ figure
 rng(1);
 X1_sm = score1_sm(:,1:2);
 [idx1_sm,C1_sm] = kmeans(X1_sm,2,"Replicates",10);
-C1_bp01_sm = unique(subjectID(idx1_sm == 1))
-C2_bp01_sm = unique(subjectID(idx1_sm == 2))
 
 figure
 plot(X1_sm(idx1_sm==1,1),X1_sm(idx1_sm==1,2),'r.','MarkerSize',12)
@@ -237,8 +245,6 @@ figure
 rng(1);
 X2_sm = score2_sm(:,1:2);
 [idx2_sm,C2_sm] = kmeans(X2_sm,2,"Replicates",10);
-C1_bp12_sm = unique(subjectID(idx2_sm == 1))
-C2_bp12_sm = unique(subjectID(idx2_sm == 2))
 
 figure
 plot(X2_sm(idx2_sm==1,1),X2_sm(idx2_sm==1,2),'r.','MarkerSize',12)
@@ -258,12 +264,11 @@ figure
 % clust1: 2,3,4,5,6,8,9,10
 % clust2: 1,7
  
+
 % % bipol 2-3
 rng(1);
 X3_sm = score3_sm(:,1:2);
 [idx3_sm,C3_sm] = kmeans(X3_sm,2,"Replicates",10);
-C1_bp23_sm = unique(subjectID(idx3_sm == 1))
-C2_bp23_sm = unique(subjectID(idx3_sm == 2))
 
 figure
 plot(X3_sm(idx3_sm==1,1),X3_sm(idx3_sm==1,2),'r.','MarkerSize',12)
