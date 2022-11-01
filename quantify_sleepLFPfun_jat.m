@@ -67,12 +67,12 @@ sleep_states = LFPTTRaw.FSScore; % epoch_count x 1 cell
 
 %% call the local "sleep_score_count" function for each sleep state
 
-[W_outputs]  = state_score_count(sleep_states, 'W', 1);  % Wake
-[N1_outputs] = state_score_count(sleep_states, 'N1', 1); % N1
-[N2_outputs] = state_score_count(sleep_states, 'N2', 1); % N2
-[N3_outputs] = state_score_count(sleep_states, 'N3', 1); % N3
-[R_outputs]  = state_score_count(sleep_states, 'R', 1);  % REM
-[sleep_outputs] = state_score_count(sleep_states, 'sleep', 1); % N1, N2, N3
+[W_outputs]  = state_score_count(sleep_states, 'W', 0);  % Wake
+[N1_outputs] = state_score_count(sleep_states, 'N1', 0); % N1
+[N2_outputs] = state_score_count(sleep_states, 'N2', 0); % N2
+[N3_outputs] = state_score_count(sleep_states, 'N3', 0); % N3
+[R_outputs]  = state_score_count(sleep_states, 'R', 0);  % REM
+[sleep_outputs] = state_score_count(sleep_states, 'sleep', 0); % N1, N2, N3
 
 %% quantify when sleep-onset occurs (after 2-3 min of contig. sleep state)
 
@@ -232,14 +232,14 @@ end
 % title('power spectrum of all epochs after normalizing')
 
 % storage arrays for power mean and std. (devided by freq band)
-mean_storage = zeros(width(power_norm_matrix),6,3);
+mean_storage = zeros(width(reshape_power_norm),6,3);
 std_storage = zeros(size(mean_storage));
 
 for bpi = 1:3
-    for i = 1:height(power_norm_matrix) % width --> columns                  % band boundaries --> use conditionals
+    for i = 1:height(power_norm_matrix{bpi}) % width --> columns                  % band boundaries --> use conditionals
         % create (indexed power value vector per freq band) to run std on   % conditionals create logical vectors (1s and 0s) using ~ boolean logic
         % create temp var that extracts epoch of interest in form of double
-        temp_epochoi = power_norm_matrix{i,bpi};
+        temp_epochoi = power_norm_matrix{bpi}{i};
 
         delta_i = temp_epochoi(freq >= 0 & freq <= 3);              % delta: 0-3 Hz
         theta_i = temp_epochoi(freq > 3 & freq <= 7);               % theta: 4-7 Hz
