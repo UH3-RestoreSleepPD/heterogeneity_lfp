@@ -44,6 +44,15 @@ bipol_power = [bipol_01, bipol_12, bipol_23];
 
 % rows (observations) = # patients (10) * # epochs per patient; cols_h (features) =  # bands (6); cols_d (contact combinations) = bipolar offsets (3)
 
+% 6 bands:
+% delta: 0-3 Hz
+% theta: 4-7 Hz
+% alpha: 8-12 Hz
+% beta: 13-30 Hz
+%   low beta: 13-20 Hz
+%   high beta: 21-30 Hz
+% gamma: 31-50 Hz (cut gamma off at 50)
+
 %% Determine cluster assignments
 % UMAP (MatLab File Exchange)
 
@@ -70,8 +79,9 @@ bipol_power = [bipol_01, bipol_12, bipol_23];
 % Central File Exchange.
 
 %% PCA (linear dimensionality reduction, assessment of variance)
-% normalize data
-% % for bp = 1:3
+% normalize data (?)
+% for bp = 1:3
+
 figure
 [coeff1, score1, latent1] = pca(bipol_01);
 subplot(1,3,1), gscatter(score1(:,1),score1(:,2),subjectID)
@@ -96,6 +106,34 @@ format = { {}; {'Marker', '^', 'MarkerSize', 6}; {}};
 xlabel('PC1')
 ylabel('PC2')
 title('PCA, bipol 2-3')
+
+
+%% PCA per bipolar offset (beta)
+
+figure
+[coeff1_b, score1_b, latent1_b] = pca(bipol_01(:,4:5));
+subplot(1,3,1), gscatter(score1_b(:,1),score1_b(:,2),subjectID)
+format = { {}; {'Marker', '^', 'MarkerSize', 6}; {}};
+%legend('Cluster 1','Cluster 2', 'location', 'northwest');
+xlabel('PC1')
+ylabel('PC2')
+title('PCA, bipol 0-1 (beta)')
+
+[coeff2_b, score2_b, latent2_b] = pca(bipol_12(:,4:5));
+subplot(1,3,2), gscatter(score2_b(:,1),score2_b(:,2),subjectID)
+format = { {}; {'Marker', '^', 'MarkerSize', 6}; {}};
+%legend('Cluster 1','Cluster 2', 'location', 'northwest');
+xlabel('PC1')
+ylabel('PC2')
+title('PCA, bipol 1-2 (beta)')
+
+[coeff3_b, score3_b, latent3_b] = pca(bipol_23(:,4:5));
+subplot(1,3,3), gscatter(score3_b(:,1),score3_b(:,2),subjectID)
+format = { {}; {'Marker', '^', 'MarkerSize', 6}; {}};
+%legend('Cluster 1','Cluster 2', 'location', 'northwest');
+xlabel('PC1')
+ylabel('PC2')
+title('PCA, bipol 2-3 (beta)')
 
 %% PCA per bipolar offset based on normalized mean sleep-state band power (all bands) 
 
@@ -124,10 +162,36 @@ xlabel('PC1')
 ylabel('PC2')
 title('PCA, Sleep Mean, bipol 2-3')
 
+%% PCA per bipolar offset based on normalized mean sleep-state band power (beta)
 
-%% K means - 2 clusters
-% run on score#
-% cluster IDs 
+figure
+[coeff1_sm_b, score1_sm_b, latent1_sm_b] = pca(bipol_01_sleep_mean(:,4:5));
+subplot(1,3,1), scatter(score1_sm_b(:,1),score1_sm_b(:,2))
+format = { {}; {'Marker', '^', 'MarkerSize', 6}; {}};
+%legend('Cluster 1','Cluster 2', 'location', 'northwest');
+xlabel('PC1')
+ylabel('PC2')
+title('PCA, Sleep Mean (beta), bipol 0-1')
+
+[coeff2_sm_b, score2_sm_b, latent2_sm_b] = pca(bipol_12_sleep_mean(:,4:5));
+subplot(1,3,2), scatter(score2_sm_b(:,1),score2_sm_b(:,2))
+format = { {}; {'Marker', '^', 'MarkerSize', 6}; {}};
+%legend('Cluster 1','Cluster 2', 'location', 'northwest');
+xlabel('PC1')
+ylabel('PC2')
+title('PCA, Sleep Mean (beta), bipol 1-2')
+
+[coeff3_sm_b, score3_sm_b, latent3_sm_b] = pca(bipol_23_sleep_mean(:,4:5));
+subplot(1,3,3), scatter(score3_sm_b(:,1),score3_sm_b(:,2))
+format = { {}; {'Marker', '^', 'MarkerSize', 6}; {}};
+%legend('Cluster 1','Cluster 2', 'location', 'northwest');
+xlabel('PC1')
+ylabel('PC2')
+title('PCA, Sleep Mean (beta), bipol 2-3')
+
+%% K means (2 clusters) per bipolar offset (all bands)
+% run on PCA score#
+% determine cluster IDs 
 % quant fraction of unique pt. epochs (overlap & spread)
 
 % bipol 0-1
@@ -151,7 +215,7 @@ hold off
 figure 
 [silh1, h1] = silhouette(X1,idx1,"sqEuclidean");
 
-% bp 01
+% bp01
 % clust1: all patients (Pt. 1-10)
 % clust2: Pt. 2,3,6,8,9,10
 
@@ -201,7 +265,7 @@ title 'Cluster Assignments and Centroids (bipol 2-3)'
 hold off
 
 figure 
-[silh3, h3] = silhouette(X2,idx2,"sqEuclidean");
+[silh3, h3] = silhouette(X3,idx3,"sqEuclidean");
 
 % bp23
 % clust1: all patients (Pt. 1-10)
@@ -212,9 +276,89 @@ figure
 % average across the found groups [0,4,8] (gr 1), [2,3,6,7] (gr 2) 
 % and [1,5] (grnother)."
 
-%% K means (2 clusters) - per bipolar contact based on normalized mean sleep-state band power (all bands) 
-% run on score#
-% cluster IDs 
+
+%% K means (2 clusters) per bipolar offset (beta)
+% bipol 0-1
+rng(1);
+X1_b = score1_b(:,1:2);
+[idx1_b,C1_b] = kmeans(X1_b,2,"Replicates",10);
+C1_bp01_b = unique(subjectID(idx1_b == 1))
+C2_bp01_b = unique(subjectID(idx1_b == 2))
+
+figure
+plot(X1_b(idx1_b==1,1),X1_b(idx1_b==1,2),'r.','MarkerSize',12)
+hold on
+plot(X1_b(idx1_b==2,1),X1_b(idx1_b==2,2),'b.','MarkerSize',12)
+plot(C1_b(:,1),C1_b(:,2),'kx',...
+     'MarkerSize',15,'LineWidth',3) 
+legend('Cluster 1','Cluster 2','Centroids',...
+       'Location','NW')
+title 'Cluster Assignments and Centroids (bipol 0-1, beta)'
+hold off
+
+figure 
+[silh1_b, h1_b] = silhouette(X1_b,idx1_b,"sqEuclidean");
+
+% bp01 b
+% clust1: all patients (Pt. 1-10)
+% clust2: all patients (Pt. 1-10)
+
+
+% bipol 1-2
+rng(1);
+X2_b = score2_b(:,1:2);
+[idx2_b,C2_b] = kmeans(X2_b,2,"Replicates",10);
+C1_bp12_b = unique(subjectID(idx2_b == 1))
+C2_bp12_b = unique(subjectID(idx2_b == 2))
+
+figure
+plot(X2_b(idx2_b==1,1),X2_b(idx2_b==1,2),'r.','MarkerSize',12)
+hold on
+plot(X2_b(idx2_b==2,1),X2_b(idx2_b==2,2),'b.','MarkerSize',12)
+plot(C2_b(:,1),C2_b(:,2),'kx',...
+     'MarkerSize',15,'LineWidth',3) 
+legend('Cluster 1','Cluster 2','Centroids',...
+       'Location','NW')
+title 'Cluster Assignments and Centroids (bipol 1-2, beta)'
+hold off
+
+figure 
+[silh2_b, h2_b] = silhouette(X2_b,idx2_b,"sqEuclidean");
+
+% bp12 b
+% clust1: all patients (Pt. 1-10)
+% clust2: all patients (Pt. 1-10)
+
+
+% bipol 2-3
+rng(1);
+X3_b = score3_b(:,1:2);
+[idx3_b,C3_b] = kmeans(X3_b,2,"Replicates",10);
+C1_bp23_b = unique(subjectID(idx3_b == 1))
+C2_bp23_b = unique(subjectID(idx3_b == 2))
+
+figure
+plot(X3_b(idx3_b==1,1),X3_b(idx3_b==1,2),'r.','MarkerSize',12)
+hold on
+plot(X3_b(idx3_b==2,1),X3_b(idx3_b==2,2),'b.','MarkerSize',12)
+plot(C3_b(:,1),C3_b(:,2),'kx',...
+     'MarkerSize',15,'LineWidth',3) 
+legend('Cluster 1','Cluster 2','Centroids',...
+       'Location','NW')
+title 'Cluster Assignments and Centroids (bipol 2-3, beta)'
+hold off
+
+figure 
+[silh3_b, h3_b] = silhouette(X3_b,idx3_b,"sqEuclidean");
+
+% bp23
+% clust1: all patients (Pt. 1-10)
+% clust2: all patients (Pt. 1-10)
+
+
+%% K means (2 clusters) - per bipolar offset based on normalized mean sleep-state band power (all bands) 
+% run on PCA score#
+% determine cluster IDs 
 % quant fraction of unique pt. epochs (overlap & spread)
 
 % bipol 0-1
@@ -241,7 +385,7 @@ figure
 % clust2: 2,6,8,9,10
 
 
-% % bipol 1-2
+% bipol 1-2
 rng(1);
 X2_sm = score2_sm(:,1:2);
 [idx2_sm,C2_sm] = kmeans(X2_sm,2,"Replicates",10);
@@ -265,7 +409,7 @@ figure
 % clust2: 1,7
  
 
-% % bipol 2-3
+% bipol 2-3
 rng(1);
 X3_sm = score3_sm(:,1:2);
 [idx3_sm,C3_sm] = kmeans(X3_sm,2,"Replicates",10);
@@ -288,6 +432,82 @@ figure
 % clust1: 2,3,6,7,8,9,10
 % clust2: 1,4,5
 
+
+%% K means (2 clusters) - per bipolar offset based on normalized mean sleep-state band power (beta) 
+% run on PCA score#
+% determine cluster IDs 
+% quant fraction of unique pt. epochs (overlap & spread)
+
+% bipol 0-1
+rng(1);
+X1_sm_b = score1_sm_b(:,1:2);
+[idx1_sm_b,C1_sm_b] = kmeans(X1_sm_b,2,"Replicates",10);
+
+figure
+plot(X1_sm_b(idx1_sm_b==1,1),X1_sm_b(idx1_sm_b==1,2),'r.','MarkerSize',12)
+hold on
+plot(X1_sm_b(idx1_sm_b==2,1),X1_sm_b(idx1_sm_b==2,2),'b.','MarkerSize',12)
+plot(C1_sm_b(:,1),C1_sm_b(:,2),'kx',...
+     'MarkerSize',15,'LineWidth',3) 
+legend('Cluster 1','Cluster 2','Centroids',...
+       'Location','NW')
+title 'Cluster Assignments and Centroids (Sleep Mean (beta), bipol 0-1)'
+hold off
+
+figure 
+[silh1_sm_b, h1_sm_b] = silhouette(X1_sm_b,idx1_sm_b,"sqEuclidean");
+
+% bp01 b
+% clust1: 1,3,4,5,7
+% clust2: 2,6,8,9,10
+
+
+% bipol 1-2
+rng(1);
+X2_sm_b = score2_sm_b(:,1:2);
+[idx2_sm_b,C2_sm_b] = kmeans(X2_sm_b,2,"Replicates",10);
+
+figure
+plot(X2_sm_b(idx2_sm_b==1,1),X2_sm_b(idx2_sm_b==1,2),'r.','MarkerSize',12)
+hold on
+plot(X2_sm_b(idx2_sm_b==2,1),X2_sm_b(idx2_sm_b==2,2),'b.','MarkerSize',12)
+plot(C2_sm_b(:,1),C2_sm_b(:,2),'kx',...
+     'MarkerSize',15,'LineWidth',3) 
+legend('Cluster 1','Cluster 2','Centroids',...
+       'Location','NW')
+title 'Cluster Assignments and Centroids (Sleep Mean (beta), bipol 1-2)'
+hold off
+
+figure 
+[silh2_sm_b, h2_sm_b] = silhouette(X2_sm_b,idx2_sm_b,"sqEuclidean");
+
+% bp12 b
+% clust1: 2,3,4,5,6,8,9,10
+% clust2: 1,7
+ 
+
+% bipol 2-3
+rng(1);
+X3_sm_b = score3_sm_b(:,1:2);
+[idx3_sm_b,C3_sm_b] = kmeans(X3_sm_b,2,"Replicates",10);
+
+figure
+plot(X3_sm_b(idx3_sm_b==1,1),X3_sm_b(idx3_sm_b==1,2),'r.','MarkerSize',12)
+hold on
+plot(X3_sm_b(idx3_sm_b==2,1),X3_sm_b(idx3_sm_b==2,2),'b.','MarkerSize',12)
+plot(C3_sm_b(:,1),C3_sm_b(:,2),'kx',...
+     'MarkerSize',15,'LineWidth',3) 
+legend('Cluster 1','Cluster 2','Centroids',...
+       'Location','NW')
+title 'Cluster Assignments and Centroids (Sleep Mean (beta), bipol 2-3)'
+hold off
+
+figure 
+[silh3_sm_b, h3_sm_b] = silhouette(X3_sm_b,idx3_sm_b,"sqEuclidean");
+
+% bp12 b
+% clust1: 2,3,6,7,8,9,10
+% clust2: 1,4,5
 
 %% take unique ptID
 % all bands
