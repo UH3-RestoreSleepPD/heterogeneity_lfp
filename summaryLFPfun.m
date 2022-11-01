@@ -7,7 +7,7 @@ patient_files = {'1_UMin_1_LFPraw.mat','2_UMin_1_LFPraw.mat',...
 
 % create main directory and folder/directory for LFP summary outputs
 maindir = 'C:\MATLAB\GitHub\UH3-RestoreSleepPD\RawPSG_Tableformat'; % DAS
-savedir = 'C:\MATLAB\GitHub\UH3-RestoreSleepPD\heterogeneity_lfp\summaryLFP_v2';
+savedir = 'C:\MATLAB\GitHub\UH3-RestoreSleepPD\heterogeneity_lfp\summaryLFP_v3';
 
 cd(maindir)  % cd = change directory
 folder1 = dir;  % dir (OS-agostic function - current directory / programming env. - all files)  dir('*._')
@@ -21,7 +21,7 @@ for i = 1:length(folder3)
     cd(temp_patientdir); % cd (OS-agostic function)
 
     % run function on all patient files
-    [m,s,sl] = quantify_sleepLFPfun(patient_files{i});
+    [m,s,sl] = quantify_sleepLFPfun_jat(patient_files{i});
 
     % save outputs in new folder
     savename = ['summaryLFP_',folder3{i},'.mat'];
