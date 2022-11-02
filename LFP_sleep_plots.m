@@ -80,7 +80,15 @@ for Bi = 1:size(bipol_ther_mean,2) % mean band power
     %title()
 end
 
-%% ANOVA by band 
-% F-val thresh
+%% ANOVA by Band (6) 
+
+% Dependent Variable = LFP Power
+% Factors (2) = Patient and Sleep Stage
+
+W = bipol_ther_mean(:,:,1);
+N1 = bipol_ther_mean(:,:,2);
+N2 = bipol_ther_mean(:,:,3);
+N3 = bipol_ther_mean(:,:,4);
+R = bipol_ther_mean(:,:,5);
 
 % M = mean(A,'omitnan')
