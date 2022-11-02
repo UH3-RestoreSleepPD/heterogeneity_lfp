@@ -76,7 +76,7 @@ for Bi = 1:size(bipol_ther_mean,2) % mean band power
     hold off
     xlim([0 6])
     xlabel('Sleep Stage')
-    ylabel('Mean LFP Power')
+    ylabel('Mean LFP Band Power')
     %title()
 end
 

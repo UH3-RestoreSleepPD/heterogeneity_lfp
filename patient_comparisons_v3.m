@@ -1,0 +1,215 @@
+% Determine heterogeneity in PD patient LFP power per frequency band during sleep
+
+% Therapeutic contact (bipol offset, biPair) per patient (xCase)
+bp_ther = readtable("SleepLFP_OriginalStudy_ContactPairs.xlsx");
+
+% read in quantify_sleepLFPfun / summaryLFPfun outputs
+maindir = 'C:\MATLAB\GitHub\UH3-RestoreSleepPD\heterogeneity_lfp\summaryLFP_v2'; % v3
+cd(maindir)
+
+LFP_struct = dir('*.mat'); % creates struct of summaryLFP metadata
+summaryLFP_files = {LFP_struct.name}; % pulls out only the file names of the summaryLFP data
+
+% extract subject ID
+subjectID = []; % 8609 x 1
+
+%% Loop through sleep stages (5), patients (10), and bands (6)
+
+bipol_ther = []; % 8609 (epochs) x 6 (bands)
+sl_stages = {'W','N1','N2','N3','R'}; % 5 (sleep stages)
+bipol_ther_mean = nan(10,6,5); % 10 (pt) x 6 (bands) x 5 (sleep stages)    % nan
+bipol_ther_std = nan(10,6,5); % 10 (pt) x 6 (bands) x 5 (sleep stages)     % nan
+
+for i = 1:length(summaryLFP_files) % 10 patients
+    load(summaryLFP_files{i},"m", "s","sl");  % m = 1075 x 6 x 3; s = 1075 x 6 x 3; sl = 1075 x 1
+    for j = 1:length(sl_stages) % 5 stages
+        sl_temp = matches(sl,sl_stages{j});
+        if sum(sl_temp) == 0
+            continue
+        end
+        m2 = m(sl_temp,:,:);
+        switch bp_ther.biPair{i}
+            case '01'
+                bipol_ther = [bipol_ther; m2(:,:,1)];
+                bipol_mean_temp = mean(m2(:,:,1));
+                bipol_std_temp = std(m2(:,:,1));
+            case '12'
+                bipol_ther = [bipol_ther; m2(:,:,2)];
+                bipol_mean_temp = mean(m2(:,:,2));
+                bipol_std_temp = std(m2(:,:,2));
+            case '23'
+                bipol_ther = [bipol_ther; m2(:,:,3)];
+                bipol_mean_temp = mean(m2(:,:,3));
+                bipol_std_temp = std(m2(:,:,3));
+        end
+        bipol_ther_mean(i,:,j) = [bipol_mean_temp];
+        bipol_ther_std(i,:,j) = [bipol_std_temp];
+        subjectID = [subjectID; repmat(i,length(m(:,:,1)),1)];
+    end
+end
+
+%% replace NANs with mean per band and sleep stage
+
+[r c] = find(isnan(bipol_ther_mean) == 1);
+RowsWithoutNumbers = unique(r);
+ColumnsWithoutNumbers = unique(c);
+
+band_mean = mean(bipol_ther_mean(:,1,:));
+
+for iN = 1:size(bipol_ther_mean,1) % 10 patients
+    for bN = 1:size(bipol_ther_mean,2) % 6 bands
+        pt_mean(iN,bN) = mean(bipol_ther_mean(iN,bN));
+    end
+    for jN = 1:size(bipol_ther_mean,3) % 5 stages
+        % find NANs
+        % replace NANs with mean power per band per sleep stage
+    end
+end
+
+% 6 bands:
+    % delta: 0-3 Hz
+    % theta: 4-7 Hz
+    % alpha: 8-12 Hz
+    % beta: 13-30 Hz
+    %   low beta: 13-20 Hz
+    %   high beta: 21-30 Hz
+    % gamma: 31-50 Hz (cut gamma off at 50)
+
+%% Determine cluster assignments based on sleep stage
+% UMAP (MatLab File Exchange)
+
+% addpath 'C:\MATLAB\GitHub\UH3-RestoreSleepPD\heterogeneity_lfp\umap'
+
+[reduction, umap, clusterIdentifiers, extras] = run_umap(bipol_ther_mean(:,:,1)); % W
+[reduction, umap, clusterIdentifiers, extras] = run_umap(bipol_ther_mean(:,:,2)); % N1
+[reduction, umap, clusterIdentifiers, extras] = run_umap(bipol_ther_mean(:,:,3)); % N2
+[reduction, umap, clusterIdentifiers, extras] = run_umap(bipol_ther_mean(:,:,4)); % N3
+[reduction, umap, clusterIdentifiers, extras] = run_umap(bipol_ther_mean(:,:,5)); % R
+
+% Connor Meehan, Jonathan Ebrahimian, Wayne Moore, and Stephen Meehan
+% (2022). Uniform Manifold Approximation and Projection (UMAP)
+% (https://www.mathworks.com/matlabcentral/fileexchange/71902), MATLAB
+% Central File Exchange.
+
+
+%% PCA (linear dimensionality reduction, assessment of variance) - by sleep stage
+
+% for Si = 1:size(bipol_ther_mean,3) % sleep stage
+%     figure
+%     [coeff(Si), score(Si), latent(Si)] = pca(bipol_ther_mean(:,:,Si));
+%     % gscatter(score1(:,1),score1(:,2),subjectID)
+%     scatter(score(:,1),score(:,2))
+%     format = { {}; {'Marker', '^', 'MarkerSize', 6}; {}};
+%     %legend('Cluster 1','Cluster 2', 'location', 'northwest');
+%     xlabel('PC1')
+%     ylabel('PC2')
+%     title('PCA, Therapeutic Contact, Sleep Stage')
+% end
+
+figure
+[coeff1, score1, latent1] = pca(bipol_ther_mean(:,:,1));
+% gscatter(score1(:,1),score1(:,2),subjectID)
+scatter(score1(:,1),score1(:,2))
+format = { {}; {'Marker', '^', 'MarkerSize', 6}; {}};
+%legend('Cluster 1','Cluster 2', 'location', 'northwest');
+xlabel('PC1')
+ylabel('PC2')
+title('PCA, Therapeutic Contact, Awake')
+
+figure
+[coeff2, score2, latent2] = pca(bipol_ther_mean(:,:,2));
+% gscatter(score2(:,1),score2(:,2),subjectID)
+scatter(score2(:,1),score2(:,2))
+format = { {}; {'Marker', '^', 'MarkerSize', 6}; {}};
+%legend('Cluster 1','Cluster 2', 'location', 'northwest');
+xlabel('PC1')
+ylabel('PC2')
+title('PCA, Therapeutic Contact, N1')
+
+figure
+[coeff3, score3, latent3] = pca(bipol_ther_mean(:,:,3));
+% gscatter(score3(:,1),score3(:,2),subjectID)
+scatter(score3(:,1),score3(:,2))
+format = { {}; {'Marker', '^', 'MarkerSize', 6}; {}};
+%legend('Cluster 1','Cluster 2', 'location', 'northwest');
+xlabel('PC1')
+ylabel('PC2')
+title('PCA, Therapeutic Contact, N2')
+
+figure
+[coeff4, score4, latent4] = pca(bipol_ther_mean(:,:,4));
+% gscatter(score4(:,1),score4(:,2),subjectID)
+scatter(score4(:,1),score4(:,2))
+format = { {}; {'Marker', '^', 'MarkerSize', 6}; {}};
+%legend('Cluster 1','Cluster 2', 'location', 'northwest');
+xlabel('PC1')
+ylabel('PC2')
+title('PCA, Therapeutic Contact, N3')
+
+figure
+[coeff5, score5, latent5] = pca(bipol_ther_mean(:,:,5));
+% gscatter(score4(:,1),score4(:,2),subjectID)
+scatter(score5(:,1),score5(:,2))
+format = { {}; {'Marker', '^', 'MarkerSize', 6}; {}};
+%legend('Cluster 1','Cluster 2', 'location', 'northwest');
+xlabel('PC1')
+ylabel('PC2')
+title('PCA, Therapeutic Contact, REM')
+
+%% K-means by sleep stage
+ 
+% run on PCA score#
+% quant fraction of unique pt. epochs (overlap & spread)
+
+% Wake
+rng(1);
+X1 = score1(:,1:2);
+[idx1,C1] = kmeans(X,2,"Replicates",10);
+figure
+plot(X1(idx1==1,1),X1(idx1==1,2),'r.','MarkerSize',12)
+hold on
+plot(X1(idx1==2,1),X1(idx1==2,2),'b.','MarkerSize',12)
+plot(C1(:,1),C1(:,2),'kx',...
+    'MarkerSize',15,'LineWidth',3)
+legend('Cluster 1','Cluster 2','Centroids',...
+    'Location','NW')
+title 'Cluster Assignments and Centroids, Awake'
+hold off
+figure
+[silh1, h1] = silhouette(X1,idx1,"sqEuclidean"); 
+
+% determine cluster IDs
+% clust1: 1,4,5,7,9
+% clust2: 2,3,6,8,10
+
+% N1
+
+% N2
+
+% N3
+
+% R
+
+%% t-SNE by sleep stage
+
+% Wake
+rng(1)
+Y1 = tsne(bipol_ther_mean(:,:,1));
+figure
+for pt_i = 1:10
+    % pt_idx = subjectID == i;
+    rand_clr = rand(1,3); % 1 x 3
+    scatter(Y1(pt_i,1),Y1(pt_i,2), 30, rand_clr,"filled")           % want a legend / point labels based on pt_index
+    hold on
+end
+xlabel('Dim1')
+ylabel('Dim2')
+title('t-SNE, Therapeutic Contact, Awake')
+
+% N1
+
+% N2
+
+% N3
+
+% R
