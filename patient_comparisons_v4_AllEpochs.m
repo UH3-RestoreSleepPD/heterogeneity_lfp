@@ -52,18 +52,19 @@ end
 % 6) gamma: 31-50 Hz
 
 %% Determine cluster assignments
+
 % UMAP (MatLab File Exchange)
 
 % addpath 'C:\MATLAB\GitHub\UH3-RestoreSleepPD\heterogeneity_lfp\umap'
 
-[reduction, umap, clusterIdentifiers, extras] = run_umap(bipol_ther_mean); % all bands
+[reduction, umap, clusterIdentifiers, extras] = run_umap(bipol_ther); % all bands
 
-[reductionD, umapD, clusterIdentifiersD, extrasD] = run_umap(bipol_ther_mean(:,1)); % delta
-[reductionT, umapT, clusterIdentifiersT, extrasT] = run_umap(bipol_ther_mean(:,2)); % theta
-[reductionA, umapA, clusterIdentifiersA, extrasA] = run_umap(bipol_ther_mean(:,3)); % alpha
-[reductionLB, umapLB, clusterIdentifiersLB, extrasLB] = run_umap(bipol_ther_mean(:,4)); % low beta
-[reductionHB, umapHB, clusterIdentifiersHB, extrasHB] = run_umap(bipol_ther_mean(:,5)); % high beta
-[reductionG, umapG, clusterIdentifiersG, extrasG] = run_umap(bipol_ther_mean(:,6)); % gamma
+% [reductionD, umapD, clusterIdentifiersD, extrasD] = run_umap(bipol_ther(:,1)); % delta
+% [reductionT, umapT, clusterIdentifiersT, extrasT] = run_umap(bipol_ther(:,2)); % theta
+% [reductionA, umapA, clusterIdentifiersA, extrasA] = run_umap(bipol_ther(:,3)); % alpha
+% [reductionLB, umapLB, clusterIdentifiersLB, extrasLB] = run_umap(bipol_ther(:,4)); % low beta
+% [reductionHB, umapHB, clusterIdentifiersHB, extrasHB] = run_umap(bipol_ther(:,5)); % high beta
+% [reductionG, umapG, clusterIdentifiersG, extrasG] = run_umap(bipol_ther(:,6)); % gamma
 
 % Connor Meehan, Jonathan Ebrahimian, Wayne Moore, and Stephen Meehan
 % (2022). Uniform Manifold Approximation and Projection (UMAP)
@@ -74,9 +75,9 @@ end
 
 % Full Spectra
 figure
-[coeff, score, latent] = pca(bipol_ther_mean);
-scatter(score(:,1),score(:,2))
-%gscatter(score(:,1),score(:,2),subjectID)
+[coeff, score, latent] = pca(bipol_ther);
+%scatter(score(:,1),score(:,2))
+gscatter(score(:,1),score(:,2),subjectID)
 format = { {}; {'Marker', '^', 'MarkerSize', 6}; {}};
 %legend('Cluster 1','Cluster 2', 'location', 'northwest');
 xlabel('PC1')
@@ -87,9 +88,9 @@ title('PCA, Therapeutic Contact, Full LFP Spectra')
 
 % Delta - Theta Range (0 - 7 Hz)*
 figure
-[coeffLF, scoreLF, latentLF] = pca(bipol_ther_mean(:,1:2));
-scatter(scoreLF(:,1),scoreLF(:,2))
-%gscatter(score(:,1),score(:,2),subjectID)
+[coeffLF, scoreLF, latentLF] = pca(bipol_ther(:,1:2));
+%scatter(scoreLF(:,1),scoreLF(:,2))
+gscatter(scoreLF(:,1),scoreLF(:,2),subjectID)
 format = { {}; {'Marker', '^', 'MarkerSize', 6}; {}};
 %legend('Cluster 1','Cluster 2', 'location', 'northwest');
 xlabel('PC1')
@@ -98,9 +99,9 @@ title('PCA, Therapeutic Contact, Low Frequency Range (0-7 Hz)')
 
     % Alpha - Low Beta Range (8 - 20 Hz)
     figure
-    [coeffMF, scoreMF, latentMF] = pca(bipol_ther_mean(:,3:4));
-    scatter(scoreMF(:,1),scoreMF(:,2))
-    %gscatter(score(:,1),score(:,2),subjectID)
+    [coeffMF, scoreMF, latentMF] = pca(bipol_ther(:,3:4));
+    %scatter(scoreMF(:,1),scoreMF(:,2))
+    gscatter(scoreMF(:,1),scoreMF(:,2),subjectID)
     format = { {}; {'Marker', '^', 'MarkerSize', 6}; {}};
     %legend('Cluster 1','Cluster 2', 'location', 'northwest');
     xlabel('PC1')
@@ -109,9 +110,9 @@ title('PCA, Therapeutic Contact, Low Frequency Range (0-7 Hz)')
 
 % Beta Range (13 - 30 Hz)*
 figure
-[coeffB, scoreB, latentB] = pca(bipol_ther_mean(:,4:5));
-scatter(scoreB(:,1),scoreB(:,2))
-%gscatter(score(:,1),score(:,2),subjectID)
+[coeffB, scoreB, latentB] = pca(bipol_ther(:,4:5));
+%scatter(scoreB(:,1),scoreB(:,2))
+gscatter(scoreB(:,1),scoreB(:,2),subjectID)
 format = { {}; {'Marker', '^', 'MarkerSize', 6}; {}};
 %legend('Cluster 1','Cluster 2', 'location', 'northwest');
 xlabel('PC1')
@@ -120,9 +121,9 @@ title('PCA, Therapeutic Contact, Beta Range (13-30 Hz)')
 
     % High Beta - Gamma Range (21 - 50 Hz)
     figure
-    [coeffHF, scoreHF, latentHF] = pca(bipol_ther_mean(:,5:6));
-    scatter(scoreHF(:,1),scoreHF(:,2))
-    %gscatter(score(:,1),score(:,2),subjectID)
+    [coeffHF, scoreHF, latentHF] = pca(bipol_ther(:,5:6));
+    %scatter(scoreHF(:,1),scoreHF(:,2))
+    gscatter(scoreHF(:,1),scoreHF(:,2),subjectID)
     format = { {}; {'Marker', '^', 'MarkerSize', 6}; {}};
     %legend('Cluster 1','Cluster 2', 'location', 'northwest');
     xlabel('PC1')
@@ -259,31 +260,31 @@ title('t-SNE, Therapeutic Contact, Mean LFP Power (Full Spectra)')
 
 % LF: Delta - Theta Range (0 - 7 Hz)*
 rng(1)
-Y_mean_LF = tsne(bipol_ther_mean(:,1:2));
+Y_LF = tsne(bipol_ther(:,1:2));
 figure
 for pt_i = 1:10
     % pt_idx = subjectID == i;
     rand_clr = rand(1,3); % 1 x 3
-    scatter(Y_mean_LF(pt_i,1),Y_mean_LF(pt_i,2), 30, rand_clr,"filled")     % want a legend / point labels based on pt_index
+    scatter(Y_LF(pt_i,1),Y_LF(pt_i,2), 30, rand_clr,"filled")     % want a legend / point labels based on pt_index
     hold on
 end
 xlabel('Dim1')
 ylabel('Dim2')
-title('t-SNE, Therapeutic Contact, Mean LF Power (0-7 Hz)')
+title('t-SNE, Therapeutic Contact, LF Power (0-7 Hz)')
 
 % Beta Range (13 - 30 Hz)*
 rng(1)
-Y_mean_B = tsne(bipol_ther_mean(:,4:5));
+Y_B = tsne(bipol_ther(:,4:5));
 figure
 for pt_i = 1:10
     % pt_idx = subjectID == i;
     rand_clr = rand(1,3); % 1 x 3
-    scatter(Y_mean_B(pt_i,1),Y_mean_B(pt_i,2), 30, rand_clr,"filled")       % want a legend / point labels based on pt_index
+    scatter(Y_B(pt_i,1),Y_B(pt_i,2), 30, rand_clr,"filled")       % want a legend / point labels based on pt_index
     hold on
 end
 xlabel('Dim1')
 ylabel('Dim2')
-title('t-SNE, Therapeutic Contact, Mean Beta Power (13-30 Hz)')
+title('t-SNE, Therapeutic Contact, Beta Power (13-30 Hz)')
 
 %% find other layers from data (aside from pt ID) to map back onto clusters
 
