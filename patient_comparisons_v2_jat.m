@@ -1,7 +1,7 @@
 % Determine heterogeneity in PD patient LFP power per frequency band during sleep
 
 % read in quantify_sleepLFPfun / summaryLFPfun outputs
-maindir = 'C:\Users\Admin\Downloads\summaryLFP_v2\summaryLFP_v2';
+maindir = 'C:\Users\Admin\Downloads\summaryLFP_v2\summaryLFP_v3';
 cd(maindir)
 
 LFP_struct = dir('*.mat'); % creates struct of summaryLFP metadata

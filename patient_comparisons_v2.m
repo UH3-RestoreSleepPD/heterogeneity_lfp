@@ -1,7 +1,7 @@
 % Determine heterogeneity in PD patient LFP power per frequency band during sleep
 
 % read in quantify_sleepLFPfun / summaryLFPfun outputs
-maindir = 'C:\MATLAB\GitHub\UH3-RestoreSleepPD\heterogeneity_lfp\summaryLFP_v2';
+maindir = 'C:\MATLAB\GitHub\UH3-RestoreSleepPD\heterogeneity_lfp\summaryLFP_v2'; % v3
 cd(maindir)
 
 LFP_struct = dir('*.mat'); % creates struct of summaryLFP metadata
@@ -24,13 +24,13 @@ for i = 1:length(summaryLFP_files)
     bipol_12 = [bipol_12; m(:,:,2)];
     bipol_23 = [bipol_23; m(:,:,3)];
     % need rows of sl that are only sleep states: col-vector logical of sl
-    sl_logical = zeros(length(sl),1,'logical'); % 1075 x 1
+    sl_logical = zeros(length(sl),1,'logical'); % 1075 x 1                  % nans
     for j = 1:length(sl)
         if matches(sl{j},{'N1', 'N2', 'N3', 'R'}) % matches replaces strcmp
             sl_logical(j) = true; % sl{j} = 1; else 'W', sl{j} = 0
         end
     end
-    bipol_01_sleep_temp = mean(m(sl_logical,:,1)); 
+    bipol_01_sleep_temp = mean(m(sl_logical,:,1));                          % omit nan
     bipol_01_sleep_mean = [bipol_01_sleep_mean; bipol_01_sleep_temp]; 
     bipol_12_sleep_temp = mean(m(sl_logical,:,2)); 
     bipol_12_sleep_mean = [bipol_12_sleep_mean; bipol_12_sleep_temp]; 
