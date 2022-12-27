@@ -1,6 +1,6 @@
-%% Script that runs all patient data through quantify_sleepLFPfun and saves outputs in new folder
+function [] = summaryLFPfun_jat(patient_files, dataDIR, saveDIR)
 
-patient_files = {'10_UMin_1_LFPraw.mat'};
+% patient_files = {'10_UMin_1_LFPraw.mat'};
 
 
 % patient_files = {'2_UMin_1_LFPraw.mat',...
@@ -9,21 +9,21 @@ patient_files = {'10_UMin_1_LFPraw.mat'};
 
 
 % create main directory and folder/directory for LFP summary outputs
-maindir = 'C:\Users\Admin\Downloads\MINNLFP'; % DAS
-savedir = 'C:\Users\Admin\Downloads\tabForm';
+% maindir = 'C:\Users\Admin\Downloads\MINNLFP'; % DAS
+% savedir = 'C:\Users\Admin\Downloads\tabForm';
 
-cd(maindir)  % cd = change directory
+cd(dataDIR)  % cd = change directory
 
 for i = 1:length(patient_files)
     % create patient dir
-    cd(maindir)
+    cd(dataDIR)
 
     % run function on all patient files
-    [m,s,sl] = quantify_sleepLFPfun_jat(patient_files{i});
+    [m,s,sl,bipolarS, powerNM] = quantify_sleepLFPfun_jat_V2(patient_files{i});
 
     % save outputs in new folder
     patINFO = split(patient_files{i},'.');
     savename = ['summaryLFP_',patINFO{1},'.mat'];
-    cd(savedir);
-    save(savename,'m','s','sl');
+    cd(saveDIR);
+    save(savename,'m','s','sl','bipolarS','powerNM');
 end

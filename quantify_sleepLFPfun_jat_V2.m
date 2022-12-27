@@ -1,12 +1,17 @@
-function [mean_storage, std_storage, sleep_statesOUT , bipolar_storage, power_norm_matrix] = quantify_sleepLFPfun_jat(patient)
+function [mean_storage, std_storage,...
+          sleep_statesOUT , bipolar_storage,...
+          power_norm_matrix] = quantify_sleepLFPfun_jat_V2(patient)
 
 % Inputs (1):
 % input 1 (patient): filename of patient's raw LFP data
 
 % Outputs (#):
-% output 1 (mean_storage): mean power per frequency band (6 columns) per LFP epoch (# rows) per bipolar offset (3)
-% output 2 (std_storage): mean standard dev. per freqency band (6) per LFP epoch (# rows) per bipolar offset (3)
-% output 3 (sleep_states): average epoch number and duration (in seconds) that contiguous epoch states occur.
+% output 1 (mean_storage): mean power per frequency band (6 columns) per LFP 
+% epoch (# rows) per bipolar offset (3)
+% output 2 (std_storage): mean standard dev. per freqency band (6) per LFP 
+% epoch (# rows) per bipolar offset (3)
+% output 3 (sleep_states): average epoch number and duration (in seconds) 
+% that contiguous epoch states occur.
 
 %% PD Sleep LFP | Patient Heterogeneity Analysis
 
@@ -58,7 +63,8 @@ function [mean_storage, std_storage, sleep_statesOUT , bipolar_storage, power_no
 load(patient, 'LFPTTRaw') % LFPTTRaw is an element in '2_UMin_1_LFPraw.mat'
 
 %% Replicate sleep state duration quantification
-% I.e., calculate the average epoch number and duration (in seconds) that contiguous epoch states occur.
+% I.e., calculate the average epoch number and duration (in seconds) that 
+% contiguous epoch states occur.
 
 % W, N1, N2, N3, R
 sleep_states = LFPTTRaw.FSScore; % epoch_count x 1 cell
@@ -74,7 +80,8 @@ sleep_states = LFPTTRaw.FSScore; % epoch_count x 1 cell
 
 %% quantify when sleep-onset occurs (after 2-3 min of contig. sleep state)
 
-% sleep_onset = sleep_outputs.start_index_blocks(find(sleep_outputs.block_dur > 150, 1, 'first'));
+% sleep_onset = sleep_outputs.start_index_blocks(find(sleep_outputs.block_dur 
+% > 150, 1, 'first'));
 
 %% Compute relative power scaled by total power for each subject and average across stage
 % Replicate heterogenous groups by Karin
@@ -109,7 +116,8 @@ for i = 1:3
     col2_upack = cell2mat(col2);
 
     % compute bipolar offset (0-1, 1-2, 2-3) 
-    bp_offset = col1_unpack - mean([col1_unpack, col2_upack],2);             % subtract mean off of most dorsal contact
+    bp_offset = col1_unpack - mean([col1_unpack, col2_upack],2);             
+    % subtract mean off of most dorsal contact
 
     % re-bundle back into cell array --> bipolar_storage
     bp_matrix = reshape(bp_offset,epoch_length,epoch_number); 
@@ -132,18 +140,24 @@ end
 % length(temp_epoch)/30
 Fs = 1024; % sampling Frequency (in Hz) of the data
 Fl = 60; % line frequency, typically 50 or 60 Hz, the center of interpolation
-neighborsToSample = 4; % Hz, tells function how large of a window (in Hz) to use when picking the constant
-neighborsToReplace = 2; % Hz, tells function which neighbors need to be replaced with the constant
+neighborsToSample = 4; % Hz, tells function how large of a window (in Hz) 
+% to use when picking the constant
+neighborsToReplace = 2; % Hz, tells function which neighbors need to be 
+% replaced with the constant
 
 all_power_bp = cell(epoch_number,3);
 
 % loop through the 3 bipolar references (bipolar_storage)
-for bpi = 1:3                                                                 % 1:width(bipolar_storage)
+for bpi = 1:3                                                                 
+    % 1:width(bipolar_storage)
     for i = 1:epoch_number
         temp_epoch = cell2mat(bipolar_storage(i,bpi));
         % spectral interpolation function, notch filter - 60Hz noise (US), 50 (EU)
-        temp_notch = spectrumInterpolation(temp_epoch, Fs, Fl, neighborsToSample, neighborsToReplace); % interpolates around the frequency of interest (Fl) and replaces its and some neighbors using a constant value
-        temp_hp = highpass(temp_notch,0.5,Fs); % filter out everything below 0.5 Hz (0.1 or 0.5 Hz - gets rid of large mag)
+        temp_notch = spectrumInterpolation(temp_epoch, Fs, Fl, neighborsToSample,...
+            neighborsToReplace); % interpolates around the frequency of interest (Fl) 
+        % and replaces its and some neighbors using a constant value
+        temp_hp = highpass(temp_notch,0.5,Fs); % filter out everything below 0.5 Hz 
+        % (0.1 or 0.5 Hz - gets rid of large mag)
 
         % pspectrum --> power, freq
         [power, freq] = pspectrum(temp_hp,Fs,"FrequencyLimits",[0 80]);
@@ -164,15 +178,12 @@ end
 %% make outputs 3 (mean) and 4 (std) matrices: epoch (# rows) by band (6 col) by bipolar ref (3)
 
 % initialize storage container
-power_norm_matrix = cell(1,3);
-slpn = cell(1,3);
+keepEpsAll = cell(1,3);
 for bpi = 1:3 
     %for i = 1:epoch_number
     % unpack all power values for full electrode
     power_matrix1 = all_power_bp(:,bpi);
     power_matrix = [power_matrix1{:}]; % matix: 4096 power values x 1149 epochs
-
-%     power_matrixMEANwv = mean(power_matrix,2);
 
     % reformat matrix --> column vector of all power values
     power_vec = reshape(power_matrix, numel(power_matrix),1); % numel --> outputs # of elements
@@ -189,30 +200,41 @@ for bpi = 1:3
     thresh = mean(power_vec) + (std(power_vec)*5);
 
     epIDsArt = unique(powerEpId(power_vec > thresh));
-
+    keepEps = ones(size(power_matrix,2),1,'logical');
     if ~isempty(epIDsArt)
-
-        keepEps = ones(size(power_matrix,2),1,'logical');
         keepEps(epIDsArt) = false;
 
-        power_matrixAR = power_matrix(:,keepEps);
-
-        power_vecAR = reshape(power_matrixAR, numel(power_matrixAR),1);
-
-        power_vec = power_vecAR;
-        power_matrix = power_matrixAR;
-
-        slpn{1,bpi} = sleep_states(keepEps);
-
+        keepEpsAll{bpi} = keepEps;
     else
-
-        slpn{1,bpi} = sleep_states;
-
+        keepEpsAll{bpi} = keepEps;
     end
 
+end
 
+% Fix KeepEpsAll so it is true for all rows
+allLogKeep = cell2mat(keepEpsAll);
+allLogKeepF = zeros(height(allLogKeep),1);
+for ki = 1:height(allLogKeep)
+    tmpROW = allLogKeep(ki,:);
+    if sum(tmpROW) == 3
+        allLogKeepF(ki) = 1;
+    end
+end
 
-    
+power_norm_matrix = cell(1,3);
+slpn = cell(1,3);
+for bpi = 1:3 
+    %for i = 1:epoch_number
+    % unpack all power values for full electrode
+    power_matrix1 = all_power_bp(:,bpi);
+    power_matrix = [power_matrix1{:}]; % matix: 4096 power values x 1149 epochs
+
+    power_matrixAR = power_matrix(:,logical(allLogKeepF));
+    power_vecAR = reshape(power_matrixAR, numel(power_matrixAR),1);
+    power_vec = power_vecAR;
+    power_matrix = power_matrixAR;
+    slpn{1,bpi} = sleep_states(logical(allLogKeepF));
+
     % normalize across entire night of recording (all epochs)
     power_norm = normalize(power_vec,"range"); % range default: 0-1
     
@@ -223,30 +245,19 @@ for bpi = 1:3
         power_norm_matrix{1,bpi}{epi,1} = reshape_power_norm(:,epi);
     end
 end
-
 sleep_statesOUT = slpn;
 
-% % Visual Sanity Check
-% % plot comparision - one plot of all epochs before/after normalizing (use subplots)
-% figure
-% subplot(1,2,1)
-% plot(freq, power_matrix)
-% xlabel('frequency')
-% ylabel('power')
-% title('power spectrum of all epochs before normalizing')
-% subplot(1,2,2)
-% plot(freq, power_norm_matrix)
-% xlabel('frequency')
-% ylabel('normalized power')
-% title('power spectrum of all epochs after normalizing')
+
 
 % storage arrays for power mean and std. (devided by freq band)
 mean_storage = zeros(width(reshape_power_norm),6,3);
 std_storage = zeros(size(mean_storage));
 
 for bpi = 1:3
-    for i = 1:height(power_norm_matrix{bpi}) % width --> columns                  % band boundaries --> use conditionals
-        % create (indexed power value vector per freq band) to run std on   % conditionals create logical vectors (1s and 0s) using ~ boolean logic
+    for i = 1:height(power_norm_matrix{bpi}) % width --> columns                  
+        % band boundaries --> use conditionals
+        % create (indexed power value vector per freq band) to run std on   
+        % conditionals create logical vectors (1s and 0s) using ~ boolean logic
         % create temp var that extracts epoch of interest in form of double
         temp_epochoi = power_norm_matrix{bpi}{i};
 
@@ -273,11 +284,16 @@ end
 % input 1 (scores): LFP sleep score data (LFPTTRaw.FSScore --> sleep_states)
 % input 2 (state): State to be counted (the FSScore: W, N1, N2, N3, R)
 % Outputs (5):
-% output 1 (score_state_matches): logical vector assessing if each epoch score matches the state being counted,
-% output 2 (state_epoch_vector): vector counting contiguous epoch states as block counts within full epoch set,
-% output 3 (state_count): count (or sum) of epoch scores that match the state being counted,
-% output 4 (state_last_count): trimmed version of output 2 storing only the counted epoch state matches / contiguous blocks
-% output 5 (start_index_blocks): vector of the start indices per contiguous state-matched epoch block
+% output 1 (score_state_matches): logical vector assessing if each 
+% epoch score matches the state being counted,
+% output 2 (state_epoch_vector): vector counting contiguous epoch 
+% states as block counts within full epoch set,
+% output 3 (state_count): count (or sum) of epoch scores that match 
+% the state being counted,
+% output 4 (state_last_count): trimmed version of output 2 storing only 
+% the counted epoch state matches / contiguous blocks
+% output 5 (start_index_blocks): vector of the start indices per contiguous 
+% state-matched epoch block
 
 function [outputs] = state_score_count(scores, state, plot_flag)
 
@@ -287,42 +303,56 @@ switch state
         score_state_matches = matches(scores, {'N1', 'N2', 'N3'});
 
     otherwise
-        score_state_matches = matches(scores, state); % set 1 for all scores labeled state (every row where scores = state), 0 otherwise
+        score_state_matches = matches(scores, state); % set 1 for all scores 
+        % labeled state (every row where scores = state), 0 otherwise
 end
 
-state_count = sum(score_state_matches);   % total up all the 1's in score_state_matches (all the rows where where scores = state)
+state_count = sum(score_state_matches);   % total up all the 1's in score_state_matches 
+% (all the rows where where scores = state)
 
 scores_length = length(scores);           % 1149 scored epochs
 epoch_count = 1;                          % initialize epoch counter
-state_epoch_vector = nan(scores_length, 2); % initialize the epoch vector (preallocate empty vec)
-start_index_blocks = nan(scores_length, 2); % preallocate empty vector with same dimensions as state_epoch_vector
+state_epoch_vector = nan(scores_length, 2); % initialize the epoch vector 
+% (preallocate empty vec)
+start_index_blocks = nan(scores_length, 2); % preallocate empty vector with 
+% same dimensions as state_epoch_vector
 block_count = 1;                          % initialize block counter
 
 for i = 1:scores_length     % iterate over all rows in scores (logical)
-    tempe = score_state_matches(i);       % simplify variable name (i = row index of score_state_matches)
+    tempe = score_state_matches(i);       % simplify variable name (i = row 
+    % index of score_state_matches)
 
     if tempe == 1 % if score = state, increment the epoch count
         if epoch_count == 1
             start_index_blocks(block_count) = i;
         end
         epoch_count = epoch_count + 1;
-        % state_epoch_vector(block_count, 1) = epoch_count;       % store the current epoch count
+        % state_epoch_vector(block_count, 1) = epoch_count;       
+        % store the current epoch count
 
     else          % otherwise, store the epoch count and start fresh
-        if epoch_count == 1  % fix issue with block count incrementing with continuous non-state matches
+        if epoch_count == 1  % fix issue with block count incrementing with 
+            % continuous non-state matches
             continue
         else
-            state_epoch_vector(block_count, 1) = epoch_count;     % store the current epoch count
-            block_count = block_count + 1;                        % increment to the next block
+            state_epoch_vector(block_count, 1) = epoch_count;     
+            % store the current epoch count
+            block_count = block_count + 1;                        
+            % increment to the next block
         end
-        epoch_count = 1;                                          % start a new epoch count
+        epoch_count = 1;                                          
+        % start a new epoch count
     end
 end
 
-state_last_count = state_epoch_vector(~isnan(state_epoch_vector(:,1)),1); % trimming NaNs - want to know where NaNs are Not; just store a vector of the counted epoch state matches / block-counts
-start_index_blocks = start_index_blocks(~isnan(start_index_blocks(:,1)),1); % trimming NaNs - just store a vector of the start indices per state-match block
+state_last_count = state_epoch_vector(~isnan(state_epoch_vector(:,1)),1); 
+% trimming NaNs - want to know where NaNs are Not; just store a vector of the 
+% counted epoch state matches / block-counts
+start_index_blocks = start_index_blocks(~isnan(start_index_blocks(:,1)),1);
+% trimming NaNs - just store a vector of the start indices per state-match block
 
-% need to calculate the average epoch number and duration (in seconds) that contiguous epoch states occur
+% need to calculate the average epoch number and duration (in seconds) 
+% that contiguous epoch states occur
 block_dur = state_last_count.*30; % put '.' element-wise computation (rather than matirx mult.)
 
 % output structure for each state
