@@ -30,6 +30,9 @@ cd(maindir.procData)
 testfile = 'summaryLFP_2_UMin_1_LFPraw.mat';
 load(testfile);
 
+%%  3. recreate frontiers image regarding full night recording
+
+plot_Sleep_DTW(maindir.procData,'summaryLFP_10_UMin_1_LFPraw.mat')
 
 %% 1 get first epoch
 
@@ -82,63 +85,9 @@ end
 
 %%
 
-for epi = 1:height(powerNM{1,1})
 
-    epoch1 = [powerNM{1,1}{epi},powerNM{1,2}{epi},powerNM{1,3}{epi}]; % seconds
-
-    epochTdecSm = zeros(ceil(4096/10),3);
-    for bd = 1:3
-        tmpBD = decimate(epoch1(:,bd),10);
-        tmpSM = smoothdata(tmpBD,'gaussian',30);
-        epochTdecSm(:,bd) = tmpSM;
-    end
-
-%     fs = 1024;
-%     binWidth = 5; % seconds
-%     binStep = 2; % seconds
-%     numBins = 0:binStep:30;
-%     maxSamps = 1024*30;
-%     binStart = [1 , (numBins(2:end-1)*fs)+1];
-%     binEnd = binStart + (binWidth*fs);
-%     binEnd(binEnd > 30*fs) = 30*fs;
-% 
-%     epochMat = zeros(length(binEnd),3);
-%     for bi = 1:3
-%         tmpB = epoch1(:,bi);
-%         for ei = 1:length(binStart)
-%             tmpBin = tmpB(binStart(ei):binEnd(ei),:);
-%             tmpRMS = rms(tmpBin);
-%             epochMat(ei,bi) = tmpRMS;
-%         end
-%     end
-    epochRMSnorm = normalize(epochTdecSm,'zscore');
-    D = pdist(epochRMSnorm,'euclidean');
-    Y = cmdscale(D);
-    Y2 = mean(Y);
-
-
-    switch sl{epi}
-        case {'N1','N2'}
-            colo2u = 'g';
-
-        case {'R'}
-            colo2u = 'r';
-
-        case {'W'}
-            colo2u = 'k';
-
-    end
-    plot(Y2(:,1),Y2(:,2),'Color',colo2u,'LineWidth',1);
-    hold on
-    plot(Y2(:,1),Y2(:,2),'Color',colo2u,'LineStyle','none','Marker','o',...
-        'MarkerFaceColor',colo2u);
-
-%     pause
-
-end
-
-%%
-epochDS = zeros(103,height(powerNM{1,1}));
+%% AVERAGE all bipolars
+epochDS = zeros(103,height(powerNM{1,1}),3);
 for spii = 1:height(powerNM{1,1})
 
     epoch1 = [powerNM{1,1}{spii},powerNM{1,2}{spii},powerNM{1,3}{spii}]; % seconds
@@ -180,8 +129,6 @@ for spii = 1:height(powerNM{1,1})
                         ylim([0 0.8])
 
     end
-
-
 
     switch sl{1}{spii}
         case {'N1','N2'}
