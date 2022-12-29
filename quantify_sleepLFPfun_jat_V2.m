@@ -1,5 +1,5 @@
 function [mean_storage, std_storage,...
-          sleep_statesOUT , bipolar_storage,...
+          sleep_statesOUT , bipolar_storageO,...
           power_norm_matrix] = quantify_sleepLFPfun_jat_V2(patient)
 
 % Inputs (1):
@@ -234,6 +234,7 @@ for bpi = 1:3
     power_vec = power_vecAR;
     power_matrix = power_matrixAR;
     slpn{1,bpi} = sleep_states(logical(allLogKeepF));
+    
 
     % normalize across entire night of recording (all epochs)
     power_norm = normalize(power_vec,"range"); % range default: 0-1
@@ -246,6 +247,7 @@ for bpi = 1:3
     end
 end
 sleep_statesOUT = slpn;
+bipolar_storageO = bipolar_storage(logical(allLogKeepF),:);
 
 
 
